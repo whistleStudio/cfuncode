@@ -1,0 +1,104 @@
+.nav {
+  $logoH: 38px;
+  $textColor: #888;
+  $textColorSelect: #555;
+  width: 100%;
+  height: 100%;
+  background-color: $mainColor;
+  position: relative;
+  &>div {position: absolute;height: 100%;text-align: center;top: 50%;transform: translateY(-50%);}
+  .logo {
+    height: $logoH;
+    width: calc(1017/275*$logoH);
+    left: 30px;
+    background: url("../../../public/img/cflogo0.png") center/contain no-repeat;
+  }
+  .save {
+    left: 220px;
+    width: 300px;
+    height: $logoH;
+    opacity: 0.95;
+    // background-color: red;
+    .save-group {
+      width: 100%;
+      .save-input {
+        width: calc(100% - 50px);
+        height: $logoH;
+        &::placeholder {
+          color: #ccc;
+          font-weight: bold;
+        }
+      }
+      .save-btn {
+      line-height: $logoH;
+      height: $logoH;
+      svg {
+        width: 25px;
+        height: 30px;
+        // fill: $textColor;
+      }
+    }
+    }
+  }
+  .mod {
+    $modH: 38px;
+    height: $modH;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    .mod-seg {
+      height: $modH;
+      background-color: #eee;
+      padding: 0;
+      .mod-item {
+        justify-content: center;
+        width: 120px;
+        line-height: $modH;
+        font-size: 16px;
+        font-weight: bold;
+        color: $textColor;
+        svg {
+          width: 50px;
+          height: 25px;
+          fill: $textColor;
+        }
+      }
+      .mod-item-select {
+        color: $textColorSelect;
+        svg {
+          fill: $textColorSelect;
+        }
+      }
+    }
+  }
+  .file {
+    right: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: 17px;
+    ul {
+      height: $logoH;
+      margin: 0;
+      >li {
+        img {margin-right: 5px;}
+        margin-right: 17px;
+        cursor: pointer;
+        height: 38px;
+        padding: 0 10px;
+        border-radius: 5px;
+        &:hover {
+          background-color: $mainColorHover;
+        }
+      }
+    }
+    .file-help {
+      cursor: pointer;
+    }
+  }
+  .uploadProgress {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translate(-50%);
+    z-index: 5;
+  }
+}

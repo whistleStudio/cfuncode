@@ -1,0 +1,35 @@
+{
+  "cards": [
+    {
+      "src": "/public/img/extlib/dsx-board.png",
+      "title": "开源大师兄主控板",
+      "des": "www.cfunworld.com",
+      "iconClassName": "iconDsx"  
+    },
+    {
+      "src": "https://dict.cfunworld.com/img/public/notfound700x350.png",
+      "title": "旺铺招租1",
+      "des": "www.cfunworld.com"
+    },
+    {
+      "src": "https://dict.cfunworld.com/img/public/notfound700x350.png",
+      "title": "旺铺招租2",
+      "des": "www.cfunworld.com"
+    },
+    {
+      "src": "https://dict.cfunworld.com/img/public/notfound700x350.png",
+      "title": "旺铺招租3",
+      "des": "www.cfunworld.com"
+    },
+    {
+      "src": "https://dict.cfunworld.com/img/public/notfound700x350.png",
+      "title": "旺铺招租4",
+      "des": "www.cfunworld.com"
+    },
+    {
+      "src": "https://dict.cfunworld.com/img/public/notfound700x350.png",
+      "title": "旺铺招租5",
+      "des": "www.cfunworld.com"
+    }
+  ]
+}

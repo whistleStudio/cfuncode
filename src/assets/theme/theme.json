@@ -1,0 +1,14 @@
+{
+  "base": "zelos",
+  "categoryStyles" : {
+     "ext_category": {
+      "colour": "#aaa"
+     },
+     "dsx": {
+      "colour": "#177ecc"
+     }
+  },
+  "componentStyles" : {
+     "workspaceBackgroundColour": "#fefefe"
+  }
+}
