@@ -3,6 +3,7 @@ import bus from "./bus";
 export default {
   port: null,
   reader: null,
+  writer: null,
   isReading: false,
   curPercent: 0, 
   isUploading: false,
@@ -93,44 +94,64 @@ export default {
     fail()
   },
   // 上传代码
-spUpload: async function (refreshCode, updatePercent) {
-
-  if ((this.port === null) || (!this.port.writable)) {
-    console.log("Not opened.")
-    return;
-  }
-  try {
-    const writer = this.port.writable.getWriter()
-    refreshCode()
-    let codeArr = bus.code.split("\n")
-    console.log(codeArr)
-    this.curPercent = 0
-    // this.isUploading = true
-    const uploadStep = 100 / codeArr.length
-    console.log("1", new Uint8Array([3, 7]).buffer)
-    await writer.write(new Uint8Array([3, 7]).buffer)
-    console.log("2")
-    await msDelay(3000)
-    console.log("3")
-    for (let v of codeArr) {
-      let lineU8Code = new TextEncoder().encode(v+"\n")
-      await writer.write(lineU8Code.buffer)
-      await msDelay(10)
-      this.curPercent = parseInt(this.curPercent + uploadStep)
-      updatePercent(this.curPercent)
+  spUpload: async function (refreshCode, updatePercent, isOnline=false) {
+    if ((this.port === null) || (!this.port.writable)) {
+      console.log("Not opened.")
+      return;
     }
-    console.log("4")
-    await writer.write(new Uint8Array([170, 102]).buffer)
-    console.log("5")
-    await msDelay(80)
-    // await writer.write(u8code) // 发送数据
-    writer.releaseLock()
-    console.log("6")
-  } catch(e){}
+    try {
+      this.writer = this.port.writable.getWriter()
+      if (isOnline) {
+        console.log("1", new Uint8Array([3, 7]).buffer)
+        await this.writer.write(new Uint8Array([3, 7]).buffer)
+        console.log("2")
+        await msDelay(3000)
+        console.log("3")
+        let lineU8Code = new TextEncoder().encode("#Online interaction\n")
+        await this.writer.write(lineU8Code.buffer)
+        await msDelay(10)
+        await this.writer.write(new Uint8Array([170, 102]).buffer)
+        console.log("5")
+        await msDelay(80)
+      } else {
+        refreshCode()
+        let codeArr = bus.code.split("\n")
+        console.log(codeArr)
+        this.curPercent = 0
+        // this.isUploading = true
+        const uploadStep = 100 / codeArr.length
+        console.log("1", new Uint8Array([3, 7]).buffer)
+        await writer.write(new Uint8Array([3, 7]).buffer)
+        console.log("2")
+        await msDelay(3000)
+        console.log("3")
+        for (let v of codeArr) {
+          let lineU8Code = new TextEncoder().encode(v+"\n")
+          await writer.write(lineU8Code.buffer)
+          await msDelay(10)
+          this.curPercent = parseInt(this.curPercent + uploadStep)
+          updatePercent(this.curPercent)
+        }
+        console.log("4")
+        await writer.write(new Uint8Array([170, 102]).buffer)
+        console.log("5")
+        await msDelay(80)
+        // await writer.write(u8code) // 发送数据
+        writer.releaseLock()
+        console.log("6")        
+      }
+    } catch(e){}
   // this.isUploading = false
-}
-
-
+  },
+  // 在线： 写单行
+  spWrite: function (data) {
+    if ((this.port === null) || (!this.port.writable)) {
+      console.log("Not opened.")
+      return;
+    }
+    this.writer.write(new Uint8Array(data).buffer)
+    console.log("write ok:", new Uint8Array(data))
+  }
 }
 
 // 延时

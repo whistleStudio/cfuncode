@@ -11,6 +11,7 @@
 import bus from "./core/bus"
 import * as libraryBlocks from 'blockly/blocks'; // 预制blocks必须
 import './blocks/dsx_stock';
+import './blocks/default_stock'
 import toolboxJson from "./assets/toolbox.json"
 import themeJson from "./assets/theme/theme.json"
 import BlocklyWorkspace from "./components/blockly_workspace/BlocklyWorkspace.vue"
@@ -19,6 +20,8 @@ import Nav from "./components/nav/Nav.vue";
 import ExtLib from "./components/extLib/ExtLib.vue"
 import { ref } from 'vue';
 import {pythonGenerator} from 'blockly/python'
+import { javascriptGenerator } from "blockly/javascript";
+import myInterpreter from "./core/my_interpreter";
 
 const options = {
   media: "/public/media/",
@@ -43,9 +46,12 @@ const code = ref()
 
 function showModChange(p) {
   showMod.value = p
-  code.value = pythonGenerator.workspaceToCode(blocklyWorkspace.value.workspace)
+  code.value = javascriptGenerator.workspaceToCode(blocklyWorkspace.value.workspace)
   bus.code = code.value
+  myInterpreter.runCode(bus.code)
 }
+
+
 
 </script>
 

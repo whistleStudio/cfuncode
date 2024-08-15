@@ -1,6 +1,9 @@
 {
   "base": "zelos",
   "categoryStyles" : {
+     "controls_category": {
+       "colour": "#0fbd8c"
+     },
      "ext_category": {
       "colour": "#aaa"
      },

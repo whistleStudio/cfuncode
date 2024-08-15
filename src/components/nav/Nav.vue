@@ -5,8 +5,11 @@
   <context-holder />
   <a-modal v-model:open="isModalOpen" :title="modalInfo.title"  :okText="modalInfo.okText"
   :cancelText="modalInfo.cancelText" @ok="modalInfo.onOk" @cancel="modalInfo.onCancel"
-  >
+  > 
     <a-input class="save-input" v-model:value="saveInputVal" placeholder="请输入项目名称"/>
+  </a-modal>
+  <a-modal v-model:open="isPrintOpen" title="串口打印" @ok="">  
+    <div>xxxx</div>
   </a-modal>
   <!-- 显示组件 -->
   <div class="logo flex-v-center"></div>
@@ -33,7 +36,7 @@
   </div>
   <div class="file flex-v-center">
     <ul class="flex-v-center">
-      <li v-for="(v, i) in ['新建', '打开', '上传']" class="flex-v-center" @click="navRMenuClick(v)">
+      <li v-for="(v, i) in ['新建', '打开', '上传', '打印']" class="flex-v-center" @click="navRMenuClick(v)">
         <!-- <img src="../../public/img/navr0.svg" alt=""> -->
         <img :src="getImageUrl(`navr${i}.svg`)" width="30px" :height="i==0 ? '25px' : '35px'">
         <span>{{ v }}</span>
@@ -63,7 +66,7 @@ import * as Blockly from 'blockly/core';
 import {pythonGenerator} from 'blockly/python'
 import bus from "../../core/bus"
 import {reactive, ref, defineEmits, defineProps, watch, onUnmounted, onMounted} from "vue"
-import { message, notification } from 'ant-design-vue';
+import { message } from 'ant-design-vue';
 import UploadProgress from "./UploadProgress.vue";
 import sp from "../../core/sp"
 
@@ -91,10 +94,10 @@ const selectMod = ref('block');
 const emits = defineEmits(["showModChange", "updateProgress"])
 const uploadPercent = ref(0), isUploading = ref(false)
 const aMenuItemList = reactive([
-  "连接串口", "固件上传", "帮助说明"
+  "连接串口", "固件上传", "帮助说明" 
 ])
 const fileRef = ref(null), saveInputVal = ref(""), isSaved = ref(false)
-const isModalOpen = ref(false)
+const isModalOpen = ref(false), isPrintOpen = ref(false)
 const modalInfo = reactive({
   title: "当前内容已改变, 是否需要保存", okText: "保存", cancelText: "跳过",
   onOk: () => {saveCode(); location.reload()},
@@ -154,12 +157,17 @@ function navRMenuClick (v) {
           uploadPercent.value = 0
           await sp.spUpload(
             () => {emits("showModChange", selectMod.value); isUploading.value = true}, //to app.vue
-            curP => uploadPercent.value = curP
+            curP => uploadPercent.value = curP,
+            true
           )
           uploadPercent.value = 100
           setTimeout(()=>{isUploading.value = false},500)
       } else sp.spConnect(connectSuccess, connectFail)
       })()
+      break
+    case "打印":
+      console.log("打印")
+      isPrintOpen.value = true
       break
   }
 }

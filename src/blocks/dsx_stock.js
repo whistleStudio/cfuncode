@@ -1,9 +1,10 @@
-/* 大师兄自定义积木功能 */
+/* 大师兄类目积木功能 */
 /* 步骤：1 customToolbox/toolbox.json添加; 2 xxxstock.js添加 */
 
 import * as Blockly from 'blockly/core';
 import {pythonGenerator, Order} from 'blockly/python';
 import themeJson from "../assets/theme/theme.json"
+import { javascriptGenerator } from 'blockly/javascript';
 
 const dsxColor = themeJson.categoryStyles.dsx.colour 
 
@@ -16,26 +17,6 @@ function addBlockSta (th, {pre=true, next=true, tip="", inline=true, oType=null,
   th.setTooltip(tip)
   th.setHelpUrl("");
 }
-/* 积木：延时 */
-Blockly.Blocks['controls_delay'] = {
-  init: function () {
-    this.appendDummyInput()
-      .appendField('等待')
-    this.appendValueInput("DELAYT")
-      .setCheck("Number")
-    this.appendDummyInput()
-      .appendField('秒')
-    this.setNextStatement(true, null)
-    addBlockSta(this, {colour: "#0fbd8c"})
-  },
-}
-
-pythonGenerator.forBlock['controls_delay'] = function (block) {
-  const delayT = pythonGenerator.valueToCode(block, 'DELAYT', pythonGenerator.ORDER_ATOMIC) || '1';
-  pythonGenerator.definitions_["import_time"] = "import time\n"
-
-  return `time.msDelay(int(${delayT} * 1000))\n`;
-};
 
 /* 积木：大师兄程序头 */
 Blockly.Blocks['dsx_start'] = {
@@ -48,6 +29,10 @@ Blockly.Blocks['dsx_start'] = {
 }
 
 pythonGenerator.forBlock['dsx_start'] = function (block, generator) {
+  // pythonGenerator.definitions_[`dsx_start`] = `#python-dsx\n`
+  return ``
+}
+javascriptGenerator.forBlock['dsx_start'] = function (block, generator) {
   // pythonGenerator.definitions_[`dsx_start`] = `#python-dsx\n`
   return ``
 }
@@ -82,6 +67,13 @@ pythonGenerator.forBlock['dsx_digitalWrite'] = function (block) {
   pythonGenerator.definitions_["from_machine_import_Pin"] = "from machine import Pin\n"
   pythonGenerator.definitions_[`pin${pin}_init_out`] = `pin${pin} = Pin(${pin},"out")\n`
   return `pin${pin}.digitalWrite(${sta})\n`
+}
+
+javascriptGenerator.forBlock['dsx_digitalWrite'] = function (block) {
+  const pin = block.getFieldValue('PIN');
+  const sta = block.getFieldValue('STA');
+  return `spWrite("255,85,129,${pin},0,0,0,${sta}")\n`
+  // return `spWrite("aaaaa")\n`
 }
 
 /* 积木：PWM输出 */

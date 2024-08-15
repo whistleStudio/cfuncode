@@ -42,6 +42,10 @@
         {
             "kind": "BLOCK",
             "type": "controls_flow_statements"
+        },
+        {
+            "kind": "BLOCK",
+            "type": "controls_print"
         }
       ]
     },
