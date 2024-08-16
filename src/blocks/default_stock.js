@@ -39,7 +39,8 @@ pythonGenerator.forBlock['controls_delay'] = function (block) {
 javascriptGenerator.forBlock['controls_delay'] = function (block) {
   const delayT = javascriptGenerator.valueToCode(block, 'DELAYT', javascriptGenerator.ORDER_ATOMIC) || '1';
 
-  return `var ms = ${delayT} * 1000;ms += new Date().getTime();\nwhile (new Date() < ms) { };\nconsole.log("ggg");\n`
+  // return `var ms = ${delayT} * 1000;ms += new Date().getTime();\nwhile (new Date() < ms) { };\nconsole.log("ggg");\n`
+  return `delayMs(${delayT});\n`
 }
 
 /* 积木: 串口打印 */
@@ -47,6 +48,12 @@ Blockly.Blocks['controls_print'] = {
   init: function () {
     this.appendDummyInput()
       .appendField('串口打印')
+    this.appendValueInput("CTX")
     addBlockSta(this)
   }
+}
+
+javascriptGenerator.forBlock['controls_print'] = function (block) {
+  const ctx = javascriptGenerator.valueToCode(block, 'CTX', javascriptGenerator.ORDER_ATOMIC) || '';
+  return `console.log(${ctx});\n`
 }

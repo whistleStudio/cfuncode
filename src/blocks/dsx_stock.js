@@ -121,17 +121,23 @@ Blockly.Blocks['dsx_digitalRead'] = {
       ]), "PIN") //添加下拉选择框
     this.appendDummyInput()
       .appendField("的数字电平")
-    addBlockSta(this, {pre: false, next: false, oType: "Boolean"})
+    addBlockSta(this, {pre: false, next: false, oType: "Number"})
   }
 };
 
-pythonGenerator.forBlock['cf_extend_aivision_faceIDAvailable'] = function (block) {
+pythonGenerator.forBlock['dsx_digitalRead'] = function (block) {
   const pin = block.getFieldValue('PIN')
   pythonGenerator.definitions_["from_machine_import_Pin"] = "from machine import Pin\n"
   pythonGenerator.definitions_[`pin${pin}_init_in`] = `pin${pin} = Pin(${pin},"in")\n`
 
   return [`pin${pin}.digitalRead()`, pythonGenerator.ORDER_ATOMIC];
 };
+
+javascriptGenerator.forBlock['dsx_digitalRead'] = function (block) {
+  const pin = block.getFieldValue('PIN')
+
+  return [`spRead("255,85,1,${pin},0,0,0,0", "tag_bool")`, javascriptGenerator.ORDER_ATOMIC]
+}
 
 /* 积木: 模拟输入 */
 Blockly.Blocks['dsx_analogRead'] = {

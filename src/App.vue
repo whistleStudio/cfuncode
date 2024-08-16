@@ -21,7 +21,6 @@ import ExtLib from "./components/extLib/ExtLib.vue"
 import { ref } from 'vue';
 import {pythonGenerator} from 'blockly/python'
 import { javascriptGenerator } from "blockly/javascript";
-import myInterpreter from "./core/my_interpreter";
 
 const options = {
   media: "/public/media/",
@@ -44,11 +43,15 @@ const showMod = ref("block")
 const blocklyWorkspace = ref(null)
 const code = ref()
 
-function showModChange(p) {
-  showMod.value = p
-  code.value = javascriptGenerator.workspaceToCode(blocklyWorkspace.value.workspace)
+function showModChange(editAreaModV, isOnlineRun) {
+  console.log(isOnlineRun)
+  showMod.value = editAreaModV
+  if (isOnlineRun) {
+    code.value = javascriptGenerator.workspaceToCode(blocklyWorkspace.value.workspace)
+  } else {
+    code.value = pythonGenerator.workspaceToCode(blocklyWorkspace.value.workspace)
+  }
   bus.code = code.value
-  myInterpreter.runCode(bus.code)
 }
 
 

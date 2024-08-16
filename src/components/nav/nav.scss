@@ -89,9 +89,18 @@
           background-color: $mainColorHover;
         }
       }
-    }
-    .file-help {
-      cursor: pointer;
+      .switch-mode {
+        margin-right: 20px;
+      }
+      .ant-switch {
+        background-color: #4ec27b;
+      }
+      .ant-switch-checked {
+        background-color: rgb(255, 157, 29);
+      }
+      .file-help {
+        cursor: pointer;
+      }
     }
   }
   .uploadProgress {

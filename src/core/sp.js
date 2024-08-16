@@ -1,4 +1,6 @@
 import bus from "./bus";
+import myInterpreter from "./my_interpreter";
+
 
 export default {
   port: null,
@@ -8,6 +10,9 @@ export default {
   curPercent: 0, 
   isUploading: false,
   USBVENDORID: 6790,
+  readTag: null,
+  readVal: 0,
+  chunk:[],
   // 浏览器校验
   checkBrowser: function (cb) {
     if (!"serial" in navigator) {
@@ -30,7 +35,7 @@ export default {
     cb(ev)
   },
   // 串口连接
-  spConnect: async function (success, fail) {
+  spConnect: async function (isOnlineRun, success, fail) {
     try {
       this.port = await navigator.serial.requestPort({ filters: [{ usbVendorId: this.USBVENDORID }] }); // 弹出系统串口列表对话框，选择一个串口进行连
       console.log("*******", this.port.getInfo())
@@ -46,6 +51,20 @@ export default {
         // parity: none,      // 校验，默认无
         // stopBits: 1,       // 停止位，默认1
       });
+      if (isOnlineRun) {
+        this.writer = this.port.writable.getWriter()
+        console.log("#Online start")
+        await this.writer.write(new Uint8Array([3, 7]).buffer)
+        console.log("2")
+        await msDelay(3000)
+        console.log("3")
+        let lineU8Code = new TextEncoder().encode("#Online interaction\n")
+        await this.writer.write(lineU8Code.buffer)
+        await msDelay(10)
+        await this.writer.write(new Uint8Array([170, 102]).buffer)
+        console.log("#Online ready")
+        await msDelay(80)           
+      }
       success()
       this.listenReceived(fail)
     } catch (e) {
@@ -72,79 +91,85 @@ export default {
     }
     this.isReading = true;
     while (this.port.readable && this.isReading) {
-    this.reader = this.port.readable.getReader();
-    try {
-      while (true) {
-        const { value, done } = await this.reader.read();
-        if (done) {
+      this.reader = this.port.readable.getReader();
+      try {
+        while (true) {
+          const { value, done } = await this.reader.read();
+          // 解析串口读取数值
+          if (this.readTag) {
+            this.chunk = [...this.chunk, ...value]
+            if (this.chunk.length == 8) { // 大多数读取适配
+              console.log("sp read:", this.chunk) // 有时会丢数据需要额外处理
+              switch (this.readTag) {
+                case "tag_bool":
+                  this.readVal = this.chunk[7]
+                  break
+                }
+              this.readTag = null
+              this.chunk = []
+            }
+          } else this.chunk = []
+          if (done) {
             // |reader| has been canceled.
             break;
+          }
+          // 需要特别注意的是：实际使用中即使对端是按一个个包发送的串口数据，接收时收到的也可能是分多段收到的
+          // updateInputData(value);
         }
-        // 需要特别注意的是：实际使用中即使对端是按一个个包发送的串口数据，接收时收到的也可能是分多段收到的
-        // updateInputData(value);
+      } catch (e) {
+        console.log(e);this.isReading = false;
+      } finally {
+        this.reader.releaseLock();
       }
-    } catch (e) {
-      console.log(e);this.isReading = false;
-    } finally {
-      this.reader.releaseLock();
-    }
     }
     await this.port.close(); // 关闭串口
     this.port = null;
     fail()
   },
   // 上传代码
-  spUpload: async function (refreshCode, updatePercent, isOnline=false) {
+  spUpload: async function (refreshCode, updatePercent) {
     if ((this.port === null) || (!this.port.writable)) {
       console.log("Not opened.")
       return;
     }
     try {
       this.writer = this.port.writable.getWriter()
-      if (isOnline) {
-        console.log("1", new Uint8Array([3, 7]).buffer)
-        await this.writer.write(new Uint8Array([3, 7]).buffer)
-        console.log("2")
-        await msDelay(3000)
-        console.log("3")
-        let lineU8Code = new TextEncoder().encode("#Online interaction\n")
+      refreshCode()
+      let codeArr = bus.code.split("\n")
+      console.log(codeArr)
+      this.curPercent = 0
+      // this.isUploading = true
+      const uploadStep = 100 / codeArr.length
+      console.log("#Upload start")
+      await this.writer.write(new Uint8Array([3, 7]).buffer)
+      await msDelay(3000)
+      for (let v of codeArr) {
+        let lineU8Code = new TextEncoder().encode(v+"\n")
         await this.writer.write(lineU8Code.buffer)
         await msDelay(10)
-        await this.writer.write(new Uint8Array([170, 102]).buffer)
-        console.log("5")
-        await msDelay(80)
-      } else {
-        refreshCode()
-        let codeArr = bus.code.split("\n")
-        console.log(codeArr)
-        this.curPercent = 0
-        // this.isUploading = true
-        const uploadStep = 100 / codeArr.length
-        console.log("1", new Uint8Array([3, 7]).buffer)
-        await writer.write(new Uint8Array([3, 7]).buffer)
-        console.log("2")
-        await msDelay(3000)
-        console.log("3")
-        for (let v of codeArr) {
-          let lineU8Code = new TextEncoder().encode(v+"\n")
-          await writer.write(lineU8Code.buffer)
-          await msDelay(10)
-          this.curPercent = parseInt(this.curPercent + uploadStep)
-          updatePercent(this.curPercent)
-        }
-        console.log("4")
-        await writer.write(new Uint8Array([170, 102]).buffer)
-        console.log("5")
-        await msDelay(80)
-        // await writer.write(u8code) // 发送数据
-        writer.releaseLock()
-        console.log("6")        
+        this.curPercent = parseInt(this.curPercent + uploadStep)
+        updatePercent(this.curPercent)
       }
+      await this.writer.write(new Uint8Array([170, 102]).buffer)
+      await msDelay(80)
+      // await writer.write(u8code) // 发送数据
+      this.writer.releaseLock()
+      console.log("#Upload over")        
     } catch(e){}
   // this.isUploading = false
   },
+  // 在线调试
+  spRun: async function (refreshCode) {
+    if ((this.port === null) || (!this.port.writable)) {
+      console.log("Not opened.")
+      return;
+    }
+    refreshCode()
+    await msDelay(100)
+    myInterpreter.runCode(bus.code)
+  },
   // 在线： 写单行
-  spWrite: function (data) {
+  spOut: function (data) {
     if ((this.port === null) || (!this.port.writable)) {
       console.log("Not opened.")
       return;
