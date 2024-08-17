@@ -73,6 +73,7 @@ export default {
   },
   // 断开串口
   spClose: async function (fail) {
+    console.log("spclose")
     if ((this.port === null) || (!this.port.writable)) {
       console.log("Not opened.");
       return;
@@ -95,7 +96,7 @@ export default {
       try {
         while (true) {
           const { value, done } = await this.reader.read();
-          // 解析串口读取数值
+          // 解析串口读取数值 高位左
           if (this.readTag) {
             this.chunk = [...this.chunk, ...value]
             if (this.chunk.length == 8) { // 大多数读取适配
@@ -104,7 +105,13 @@ export default {
                 case "tag_bool":
                   this.readVal = this.chunk[7]
                   break
-                }
+                case "tag_short":
+                  this.readVal = byteToDec([this.chunk[6], this.chunk[7]])
+                  break
+                case "tag_int":
+                  this.readVal = byteToDec([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]])
+                  break
+              }
               this.readTag = null
               this.chunk = []
             }
@@ -119,7 +126,9 @@ export default {
       } catch (e) {
         console.log(e);this.isReading = false;
       } finally {
+        console.log("releaselock")
         this.reader.releaseLock();
+        this.writer.releaseLock()
       }
     }
     await this.port.close(); // 关闭串口
@@ -184,4 +193,20 @@ function msDelay (t) {
   return new Promise((rsv, rej)=>{
     setTimeout(()=>{rsv()}, t)
   }).catch(()=>{console.log("delay err")})
+}
+
+// 字节转short 
+function byte2ToUnsignedShort(arr){
+  var s = 0;
+  s += arr[1] << 8
+  s += arr[0]
+  return s;
+}
+
+function byteToDec(arr) {
+  let s = 0, l = arr.length
+  for (let i=0; i<l-1; i++) {
+    s += arr[i] << (8*(l-1-i))
+  }
+  return s
 }

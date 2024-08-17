@@ -41,15 +41,20 @@ function onOpenExtLib (ev) {
 function addExt ({extIdx, extSta, extIcon}) {
   console.log("addExt")
   const l = toolboxJson.contents.length
+  // let curExt = []
   switch (extIdx) {
     case 0:
-      if (extSta) {
-        const curExt = customToolboxJson.contents[0]
-        toolboxJson.contents.splice(l, 0, curExt)
-        cateIconClassList.push(extIcon)
-      } else {
-        toolboxJson.contents.pop()
-        cateIconClassList.pop()
+      for (let i in Array(2).fill(0)) { // 大师兄2个模块组
+        if (extSta) {
+          toolboxJson.contents.push(customToolboxJson.contents[i])
+          cateIconClassList.push(extIcon)
+          // curExt = customToolboxJson.contents.slice(0, 2)
+          // toolboxJson.contents.splice(l, 0, ...curExt)
+          // cateIconClassList.push(extIcon)
+        } else {
+          toolboxJson.contents.pop()
+          cateIconClassList.pop()
+        }
       }
       workspace.value.updateToolbox(toolboxJson)
       addCateIcon() //默认类目图标

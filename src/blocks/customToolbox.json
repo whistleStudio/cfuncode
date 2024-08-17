@@ -50,6 +50,17 @@
           "type": "dsx_sysTime"
         }
       ]
+    },
+    {
+      "kind": "CATEGORY",
+      "name": "传感器",
+      "categorystyle": "dsx",
+      "contents": [
+        {
+          "kind": "BLOCK",
+          "type": "dsx_keyabRead"
+        }
+      ]
     }
   ]
 }

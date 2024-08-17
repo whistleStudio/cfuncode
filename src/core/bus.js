@@ -11,7 +11,7 @@ export default {
   emit: function (name, ...args) {
     console.log("emit:", name)
     let fnArr = this.evlist[name]
-    console.log(fnArr)
+    // console.log(fnArr)
     fnArr.forEach(cb => {
       cb.apply(this, args)
     });

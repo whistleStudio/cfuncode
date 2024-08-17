@@ -159,7 +159,7 @@ function navRMenuClick (v) {
         if (sp.port) {
           uploadPercent.value = 0
           await sp.spUpload(
-            () => {emits("showModChange", editAreaMod.value, isOnlineRun); isUploading.value = true}, //to app.vue
+            () => {emits("showModChange", editAreaMod.value, isOnlineRun.value); isUploading.value = true}, //to app.vue
             curP => uploadPercent.value = curP
           )
           uploadPercent.value = 100
