@@ -57,8 +57,60 @@
       "categorystyle": "dsx",
       "contents": [
         {
+          "kind": "LABEL",
+          "text": "板载:"
+        },
+        {
           "kind": "BLOCK",
           "type": "dsx_keyabRead"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_ltrRead"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_aht20Read"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_asrRead"          
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_lis3dhRead"
+        },
+        {
+          "kind": "LABEL",
+          "text": "外接:"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_pm25Read"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_ds18b20Read"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_dht11Read"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_weighRead"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_colorRead"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_ultrasonicRead"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_rfidRead"
         }
       ]
     }

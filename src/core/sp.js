@@ -55,9 +55,7 @@ export default {
         this.writer = this.port.writable.getWriter()
         console.log("#Online start")
         await this.writer.write(new Uint8Array([3, 7]).buffer)
-        console.log("2")
         await msDelay(3000)
-        console.log("3")
         let lineU8Code = new TextEncoder().encode("#Online interaction\n")
         await this.writer.write(lineU8Code.buffer)
         await msDelay(10)
@@ -75,7 +73,6 @@ export default {
   spClose: async function (fail) {
     console.log("spclose")
     if ((this.port === null) || (!this.port.writable)) {
-      console.log("Not opened.");
       return;
     }
     if (this.isReading) {
@@ -102,14 +99,25 @@ export default {
             if (this.chunk.length == 8) { // 大多数读取适配
               console.log("sp read:", this.chunk) // 有时会丢数据需要额外处理
               switch (this.readTag) {
-                case "tag_bool":
+                case "tag_uint8":
                   this.readVal = this.chunk[7]
+                  break
+                case "tag_int8":
+                  var num = this.chunk[7]
+                  let numSign = num >> 7, numVal = num & 127
+                  this.readVal = numSign? -numVal : numVal
                   break
                 case "tag_short":
                   this.readVal = byteToDec([this.chunk[6], this.chunk[7]])
                   break
                 case "tag_int":
                   this.readVal = byteToDec([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]])
+                  break
+                case "tag_float":
+                  this.readVal = byteToFloat([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]]).toFixed(2)
+                  break
+                case "tag_boardKey":
+                  this.readVal = !Boolean(this.chunk[7])
                   break
               }
               this.readTag = null
@@ -138,7 +146,6 @@ export default {
   // 上传代码
   spUpload: async function (refreshCode, updatePercent) {
     if ((this.port === null) || (!this.port.writable)) {
-      console.log("Not opened.")
       return;
     }
     try {
@@ -170,7 +177,6 @@ export default {
   // 在线调试
   spRun: async function (refreshCode) {
     if ((this.port === null) || (!this.port.writable)) {
-      console.log("Not opened.")
       return;
     }
     refreshCode()
@@ -196,17 +202,17 @@ function msDelay (t) {
 }
 
 // 字节转short 
-function byte2ToUnsignedShort(arr){
-  var s = 0;
-  s += arr[1] << 8
-  s += arr[0]
-  return s;
-}
-
 function byteToDec(arr) {
   let s = 0, l = arr.length
   for (let i=0; i<l-1; i++) {
     s += arr[i] << (8*(l-1-i))
   }
   return s
+}
+
+// 4字节转float32
+function byteToFloat(buf) {
+  buf.reverse();
+  let buf32 =  new Float32Array(buf.buffer);
+  return buf32[0];
 }
