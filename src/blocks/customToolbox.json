@@ -113,6 +113,146 @@
           "type": "dsx_rfidRead"
         }
       ]
+    },
+    {
+      "kind": "CATEGORY",
+      "name": "显示",
+      "categorystyle": "dsx",
+      "contents": [
+        {
+          "kind": "LABEL",
+          "text": "板载:"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_oledStr",
+          "inputs": {
+            "X": {
+                "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                        "NUM": 0
+                    }
+                }
+            },
+            "Y": {
+              "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                      "NUM": 0
+                  }
+              }
+            },
+            "CTX": {
+              "shadow": {
+                  "type": "text",
+                  "fields": {
+                      "TEXT": "hello"
+                  }
+              }
+            }
+          }
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_oledNum",
+          "inputs": {
+            "X": {
+                "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                        "NUM": 0
+                    }
+                }
+            },
+            "Y": {
+              "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                      "NUM": 0
+                  }
+              }
+            },
+            "NUM": {
+              "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                      "NUM": 123.4
+                  }
+              }
+            }
+          }
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_oledCh",
+          "inputs": {
+            "X": {
+                "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                        "NUM": 0
+                    }
+                }
+            },
+            "Y": {
+              "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                      "NUM": 0
+                  }
+              }
+            },
+            "CTXCH": {
+              "shadow": {
+                  "type": "text",
+                  "fields": {
+                      "TEXT": "你好"
+                  }
+              }
+            }
+          }
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_oledEnable"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_oledClear"
+        }
+      ]
+    },
+    {
+      "kind": "CATEGORY",
+      "name": "放音",
+      "categorystyle": "dsx",
+      "contents": [
+        {
+          "kind": "LABEL",
+          "text": "板载:"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_buzzer"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_buzzerClose"
+        },
+        {
+          "kind": "LABEL",
+          "text": "外接:"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_ttsSet"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mp3PlayMode"
+        }
+      ]
     }
   ]
 }

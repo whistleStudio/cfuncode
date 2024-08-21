@@ -70,11 +70,9 @@ function initApi(interpreter, globalObject) {
   );
   interpreter.setProperty(globalObject, 'delayMs', wrapper);
 
-  // implenmentation: spWrite()
-  var wrapper = function (cmd) {
-    window.console.log(cmd)
-    let cmdArr  = cmd.split(",")
-    sp.spOut(cmdArr)
+  // implenmentation: spWrite() 通用8字节, 原始数据不需处理
+  var wrapper = function (...cmd) {
+    sp.spOut(cmd)
   }
   interpreter.setProperty(
     globalObject, 
@@ -82,13 +80,12 @@ function initApi(interpreter, globalObject) {
     interpreter.createNativeFunction(wrapper)
   )
 
-  // implenmentation: spRead()
-  var wrapper = function (cmd, tag, callback) {
-    window.console.log(cmd, tag)
+  // implenmentation: spRead() 
+  var wrapper = function (tag, cmd0, cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, callback) {
+    // window.console.log(cmd, tag)
     sp.readTag = tag
-    let cmdArr  = cmd.split(",")
-    sp.spOut(cmdArr)
-    setTimeout(()=>{window.console.log("timeout readval:", sp.readVal);callback(sp.readVal)}, 20)
+    sp.spOut([cmd0, cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7])
+    setTimeout(()=>{window.console.log("timeout readval:", sp.readVal);callback(sp.readVal)}, 120) // 延迟根据硬件传输与数据处理时长而定，需确保可靠返回
     return 0
   }
   interpreter.setProperty(
@@ -96,5 +93,75 @@ function initApi(interpreter, globalObject) {
     'spRead',
     interpreter.createAsyncFunction(wrapper)
   )
+
+  // implenmentation: spPwmWrite()
+  var wrapper = function (pin, freq, duty) {
+    let f = unsignedShortToByte2(freq)
+    sp.spOut([255, 85, 130, pin, f[1], f[0], 0, duty])
+  }
+  interpreter.setProperty(
+    globalObject, 
+    'spPwmWrite',
+    interpreter.createNativeFunction(wrapper)
+  )
+
+  // implenmentation: spOledStrWrite()
+  var wrapper = function (x, y, optV, ctx) {
+    const encoder = new TextEncoder()
+    const ctxBytes = encoder.encode(ctx);
+    const ctxL = ctx.length
+    if (ctxL < 17) {
+      var ctxBytesFill = Array(17-ctxL).fill(0)
+    }
+    sp.spOut([255, 85, 168, x, y, optV, ctxL, ...ctxBytes, ...ctxBytesFill])
+  }
+  interpreter.setProperty(
+    globalObject, 
+    'spOledStrWrite',
+    interpreter.createNativeFunction(wrapper)
+  )
+
+  // implenmentation: spOledNumWrite()
+  var wrapper = function (x, y, optV, num) {
+    let numStr = floatToByte4(num)
+    sp.spOut([255,85,169, x, y, optV, ...numStr])
+  }
+  interpreter.setProperty(
+    globalObject, 
+    'spOledNumWrite',
+    interpreter.createNativeFunction(wrapper)
+  )
+
+  // implenmentation: spOledChWrite()
+  var wrapper = function (x, y, optV, ctxCh) {
+    const encoder = new TextEncoder()
+    const ctxBytes = encoder.encode(ctxCh);
+    const ctxChL = ctxCh.length
+    if (ctxBytes.length < 33) {
+      var ctxBytesFill = Array(33-ctxBytes.length).fill(0)
+    }
+    sp.spOut([255, 85, 170, x, y, optV, ctxChL, ...ctxBytes, ...ctxBytesFill])
+  }
+  interpreter.setProperty(
+    globalObject, 
+    'spOledChWrite',
+    interpreter.createNativeFunction(wrapper)
+  )
+}
+
+// 无符号short转双字节， 高左
+function unsignedShortToByte2(s){
+  var targets = [];
+  targets[0] = (s >> 8 & 0xFF);
+  targets[1] = (s & 0xFF);
+  return targets;
+}
+
+// float32转uint8Array
+function floatToByte4 (float_num) {
+  var data = new Float32Array([float_num]);
+  var buffer = new ArrayBuffer(data.byteLength);
+  new Float32Array(buffer).set(data);
+  return (new Uint8Array(buffer)).reverse();
 }
 

@@ -1,7 +1,7 @@
-function uint8_to_float(buf) {
-  buf.reverse();
-  let buf32 =  new Float32Array(buf.buffer);
-  return buf32[0];
-}
+var optArr = Array(16).fill(0).map((v, i) => String(i))
+// console.log(optArr)
 
-console.log( (1<<4) + 1)
+function genOpt (arr) {
+  return arr.map(v => [v, v])
+}
+console.log(genOpt(optArr))

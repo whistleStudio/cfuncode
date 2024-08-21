@@ -11,7 +11,6 @@ let customBlockProps = {
 }
 
 function blockInit (blockType, initJson) {
-  console.log(customBlockProps.colour)
   Blockly.defineBlocksWithJsonArray([
     {
       type: blockType,

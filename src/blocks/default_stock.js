@@ -23,8 +23,6 @@ pythonGenerator.forBlock['controls_delay'] = function (block) {
 };
 javascriptGenerator.forBlock['controls_delay'] = function (block) {
   const delayT = javascriptGenerator.valueToCode(block, 'DELAYT', javascriptGenerator.ORDER_ATOMIC) || '1';
-
-  // return `var ms = ${delayT} * 1000;ms += new Date().getTime();\nwhile (new Date() < ms) { };\nconsole.log("ggg");\n`
   return `delayMs(${delayT});\n`
 }
 

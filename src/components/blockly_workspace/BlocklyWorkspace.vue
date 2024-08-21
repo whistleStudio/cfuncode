@@ -44,7 +44,7 @@ function addExt ({extIdx, extSta, extIcon}) {
   // let curExt = []
   switch (extIdx) {
     case 0:
-      for (let i in Array(2).fill(0)) { // 大师兄2个模块组
+      for (let i in Array(4).fill(0)) { // 大师兄4个模块组
         if (extSta) {
           toolboxJson.contents.push(customToolboxJson.contents[i])
           cateIconClassList.push(extIcon)
