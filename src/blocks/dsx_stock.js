@@ -606,7 +606,7 @@ javascriptGenerator.forBlock['dsx_ttsSet'] = function (block) {
 
 /* 积木: mp3播放模式 */
 blockInit("dsx_mp3PlayMode", {
-  message0: "设置MP3播放模式为%1",
+  message0: "设置MP3播放状态为%1",
   args0: [{ type: "field_dropdown", name: "MODE", options: [["播放/暂停", "1"], ["停止", "2"], ["下一首", "3"], ["上一首", "4"]] }],
 })
 
@@ -621,3 +621,77 @@ javascriptGenerator.forBlock['dsx_mp3PlayMode'] = function (block) {
   return `spWrite(255,85,151,1,${mode},0,0,0)\n`
 }
 
+/* 积木: mp3播放音量 */
+blockInit("dsx_mp3Vol", {
+  message0: "设置MP3播放音量为%1",
+  args0: [{ type: "field_dropdown", name: "VOL", options: genOpt(Array(33).fill(0).map((v, i)=>String(i))) }],
+})
+
+pythonGenerator.forBlock['dsx_mp3Vol'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MP3Player"] = "from machine import MP3Player\n"
+  pythonGenerator.definitions_[`mp3_init`] = `mp3 = MP3Player()\n`
+  const vol = block.getFieldValue('VOL')
+  return `mp3.setVolume(${vol})\n`
+}
+javascriptGenerator.forBlock['dsx_mp3Vol'] = function (block) {
+  const vol = block.getFieldValue('VOL')
+  return `spWrite(255,85,151,2,${vol},0,0,0)\n`
+}
+
+/* 积木: mp3播放根目录 */
+blockInit("dsx_mp3RootPlay", {
+  message0: "播放根目录下编号%1的音频",
+  args0: [{ type: "input_value", name: "ID", check: "Number"}],
+  tooltip: "存储卡内音频文件命名需以四位数字开头，如 0001七里香.mp3 对应编号1"
+})
+
+pythonGenerator.forBlock['dsx_mp3RootPlay'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MP3Player"] = "from machine import MP3Player\n"
+  pythonGenerator.definitions_[`mp3_init`] = `mp3 = MP3Player()\n`
+  const id = pythonGenerator.valueToCode(block, 'ID', pythonGenerator.ORDER_ATOMIC) || 1
+  return `mp3.rootPlay(${id})\n`
+}
+javascriptGenerator.forBlock['dsx_mp3RootPlay'] = function (block) {
+  const id = javascriptGenerator.valueToCode(block, 'ID', javascriptGenerator.ORDER_ATOMIC) || 1
+  return `spWrite(255,85,151,3,${id},0,0,0)\n`
+}
+
+/* 积木: mp3播放文件夹 */
+blockInit("dsx_mp3DirPlay", {
+  message0: "播放编号%1文件夹的第%2个音频",
+  args0: [
+    { type: "input_value", name: "DIRID", check: "Number"},
+    { type: "input_value", name: "FILEID", check: "Number"}
+  ],
+  tooltip: "存储卡内目录、文件命名需以四位数字开头，如 00001周杰伦/0001七里香.mp3 均对应编号1"
+})
+
+pythonGenerator.forBlock['dsx_mp3DirPlay'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MP3Player"] = "from machine import MP3Player\n"
+  pythonGenerator.definitions_[`mp3_init`] = `mp3 = MP3Player()\n`
+  const dirId = pythonGenerator.valueToCode(block, 'DIRID', pythonGenerator.ORDER_ATOMIC) || 1
+  const fileId = pythonGenerator.valueToCode(block, 'FILEID', pythonGenerator.ORDER_ATOMIC) || 1
+  return `mp3.folderPlay(${dirId}, ${fileId})\n`
+}
+javascriptGenerator.forBlock['dsx_mp3DirPlay'] = function (block) {
+  const dirId = javascriptGenerator.valueToCode(block, 'DIRID', javascriptGenerator.ORDER_ATOMIC) || 1
+  const fileId = javascriptGenerator.valueToCode(block, 'FILEID', javascriptGenerator.ORDER_ATOMIC) || 1
+  return `spWrite(255,85,151,4,${dirId},${fileId},0,0)\n`
+}
+
+/* 积木: mp3循环模式 */
+blockInit("dsx_mp3LoopMode", {
+  message0: "设置MP3循环模式为%1",
+  args0: [{ type: "field_dropdown", name: "MODE", options: [["不循环", "0"], ["单曲循环", "1"], ["所有曲目循环", "2"], ["随机播放", "3"]] }],
+})
+
+pythonGenerator.forBlock['dsx_mp3LoopMode'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MP3Player"] = "from machine import MP3Player\n"
+  pythonGenerator.definitions_[`mp3_init`] = `mp3 = MP3Player()\n`
+  const mode = block.getFieldValue('MODE')
+  return `mp3.setLoopMode(${mode})\n`
+}
+javascriptGenerator.forBlock['dsx_mp3LoopMode'] = function (block) {
+  const mode = block.getFieldValue('MODE')
+  return `spWrite(255,85,151,5,${mode},0,0,0)\n`
+}

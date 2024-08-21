@@ -251,6 +251,50 @@
         {
           "kind": "BLOCK",
           "type": "dsx_mp3PlayMode"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mp3Vol"          
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mp3LoopMode"          
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mp3RootPlay",
+          "inputs": {
+            "ID": {
+                "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                      "NUM": 1
+                    }
+                }
+            }
+          }          
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mp3DirPlay",
+          "inputs": {
+            "DIRID": {
+                "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                      "NUM": 1
+                    }
+                }
+            },
+            "FILEID": {
+                "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                      "NUM": 1
+                    }
+                }
+            }
+          }         
         }
       ]
     }
