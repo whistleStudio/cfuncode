@@ -303,7 +303,7 @@ javascriptGenerator.forBlock['dsx_ds18b20Read'] = function (block) {
   return [`spRead("tag_short", 255,85,15,${pin},0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
 }
 
-/* 积木: DHT11温湿度 */
+/* 积木: DHT11温湿度 (在线有问题)*/
 blockInit("dsx_dht11Read", {
   message0: "读取引脚%1DHT11传感器%2",
   args0: [
@@ -328,7 +328,7 @@ javascriptGenerator.forBlock['dsx_dht11Read'] = function (block) {
   const pin = block.getFieldValue('PIN')
   const opt = block.getFieldValue('OPT')
   let optV = opt=="温度值" ? 11 : 12
-  return [`spRead("tag_float", 255,85,${optV},${pin},0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
+  return [`spRead("tag_uint8", 255,85,${optV},${pin},0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
 }
 
 /* 积木: 称重 */
@@ -694,4 +694,158 @@ pythonGenerator.forBlock['dsx_mp3LoopMode'] = function (block) {
 javascriptGenerator.forBlock['dsx_mp3LoopMode'] = function (block) {
   const mode = block.getFieldValue('MODE')
   return `spWrite(255,85,151,5,${mode},0,0,0)\n`
+}
+
+/* ----------------------- 电机 ------------------------ */
+/* 积木: 电机 */
+blockInit("dsx_motor", {
+  message0: "设置电机%1转向: %2, 转速: %3",
+  args0: [
+    { type: "field_dropdown", name: "ID", options: [["M1", "1"], ["M2", "2"], ["M3", "3"], ["M4", "4"]] },
+    { type: "field_dropdown", name: "MODE", options: [["正转", "0"], ["反转", "1"]] },
+    { type: "input_value", name: "SPEED", check: "Number"}
+  ],
+})
+
+pythonGenerator.forBlock['dsx_motor'] = function (block) {
+  const id = block.getFieldValue('ID')
+  const mode = block.getFieldValue('MODE')
+  const speed = pythonGenerator.valueToCode(block, 'SPEED', pythonGenerator.ORDER_ATOMIC) || 0
+  pythonGenerator.definitions_["from_machine_import_Motor"] = "from machine import Motor\n"
+  pythonGenerator.definitions_[`motor${id}_init`] = `motor${id} = Motor(${id})\n`
+  
+  return `motor${id}.start(${mode}, ${speed})\n`
+}
+javascriptGenerator.forBlock['dsx_motor'] = function (block) {
+  const id = parseInt(block.getFieldValue('ID'))
+  const mode = parseInt(block.getFieldValue('MODE'))
+  const speed = javascriptGenerator.valueToCode(block, 'SPEED', javascriptGenerator.ORDER_ATOMIC) || 0
+  const byte3 = (id<<4) + mode
+  // console.log(id, mode, id<<4 + mode)
+  return `spWrite(255,85,160,${byte3},0,0,0,${speed})\n`
+}
+
+/* 积木: 舵机  (在线未完成)*/
+blockInit("dsx_servo", {
+  message0: "设置引脚%1, %2舵机%3转动到%4度数",
+  args0: [
+    { type: "field_dropdown", name: "ID", options: genOpt(["1", "2", "5", "8", "11", "12", "13", "14", "15", "19", "20"]) },
+    { type: "field_dropdown", name: "MODEL", options: [["180°", "0"], ["270°", "1"]] },
+    { type: "field_dropdown", name: "SPEED", options: [["快速", "0"], ["缓慢", "1"]] },
+    { type: "input_value", name: "ANGLE", check: "Number"},
+  ],
+})
+
+pythonGenerator.forBlock['dsx_servo'] = function (block) {
+  const id = block.getFieldValue('ID'), model = block.getFieldValue('MODEL'), speed = block.getFieldValue('SPEED')
+  const angle = pythonGenerator.valueToCode(block, 'ANGLE', pythonGenerator.ORDER_ATOMIC) || 0
+  pythonGenerator.definitions_["from_machine_import_Servo"] = "from machine import Servo\n"
+  pythonGenerator.definitions_[`servo${id}_init`] = `servo${id} = Servo(${id})\n`
+  if (speed == 0) return `servo${id}.angle(${angle}, ${model})\n`
+  return `servo${id}.slowangle(${angle}, ${model})\n`
+}
+javascriptGenerator.forBlock['dsx_servo'] = function (block) {
+  const id = block.getFieldValue('ID'), model = block.getFieldValue('MODEL'), speed = block.getFieldValue('SPEED')
+  const angle = javascriptGenerator.valueToCode(block, 'ANGLE', javascriptGenerator.ORDER_ATOMIC) || 0
+  // console.log(id, mode, id<<4 + mode)
+  return `spWrite(255,85,160,${byte3},0,0,0,${angle})\n`
+}
+
+/* 无线通讯(在线有问题) */
+/* 积木: 无线连接 */
+blockInit("dsx_wifiConnect", {
+  message0: "连接wifi名称: %1,  密码: %2",
+  args0: [
+    { type: "input_value", name: "SSID"},
+    { type: "input_value", name: "PWD"},
+  ],
+})
+pythonGenerator.forBlock['dsx_wifiConnect'] = function (block) {
+  const ssid = pythonGenerator.valueToCode(block, 'SSID', pythonGenerator.ORDER_ATOMIC) || "name"
+  const pwd = pythonGenerator.valueToCode(block, 'PWD', pythonGenerator.ORDER_ATOMIC) || "password"
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  return `mqtt.connectWiFi(${ssid}, ${pwd})\n`
+}
+javascriptGenerator.forBlock['dsx_wifiConnect'] = function (block) {
+  const ssid = javascriptGenerator.valueToCode(block, 'SSID', javascriptGenerator.ORDER_ATOMIC) || "name"
+  const pwd = javascriptGenerator.valueToCode(block, 'PWD', javascriptGenerator.ORDER_ATOMIC) || "password"
+  return `spMqttWrite('wifiConnect', 255,85,192,1,${ssid},${pwd})\n`
+}
+
+/* 积木: 无线连接是否成功 */
+blockInit("dsx_wifiConnectOk", {
+  message0: "wifi是否成功连接",
+  previousStatement: undefined,
+  nextStatement: undefined,
+  output: "Boolean"
+})
+pythonGenerator.forBlock['dsx_wifiConnectOk'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  return `mqtt.checkWiFi()\n`
+}
+javascriptGenerator.forBlock['dsx_wifiConnectOk'] = function (block) {
+  return [`spRead("tag_uint8", 255,85,33,1,0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
+}
+
+/* 积木: mqtt设置 */
+blockInit("dsx_mqttSet", {
+  message0: "设置物联服务端用户名: %1,  设备ID: %2,  连接密钥: %3",
+  args0: [
+    { type: "input_value", name: "USERNAME"},
+    { type: "input_value", name: "ID"},
+    { type: "input_value", name: "PWD"}
+  ],
+})
+pythonGenerator.forBlock['dsx_mqttSet'] = function (block) {
+  const username = pythonGenerator.valueToCode(block, 'USERNAME', pythonGenerator.ORDER_ATOMIC) || "username"
+  const id = pythonGenerator.valueToCode(block, 'ID', pythonGenerator.ORDER_ATOMIC) || "id"
+  const pwd = pythonGenerator.valueToCode(block, 'PWD', pythonGenerator.ORDER_ATOMIC) || "password"
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  return `mqtt.setMqtt(${username}, ${id}, ${pwd})\n`
+}
+javascriptGenerator.forBlock['dsx_mqttSet'] = function (block) {
+  const username = javascriptGenerator.valueToCode(block, 'USERNAME', javascriptGenerator.ORDER_ATOMIC) || "name"
+  const id = javascriptGenerator.valueToCode(block, 'ID', javascriptGenerator.ORDER_ATOMIC) || "id"
+  const pwd = javascriptGenerator.valueToCode(block, 'PWD', javascriptGenerator.ORDER_ATOMIC) || "password"
+  return `spMqttWrite('mqttSet', 255,85,193,0,${username},${id},${pwd})\n`
+}
+
+/* 积木: mqtt连接 */
+blockInit("dsx_mqttConnect", {
+  message0: "连接物联服务端地址: %1,  端口: %2",
+  args0: [
+    { type: "input_value", name: "ADDRESS"},
+    { type: "input_value", name: "PORT"}
+  ],
+})
+pythonGenerator.forBlock['dsx_mqttConnect'] = function (block) {
+  const address = pythonGenerator.valueToCode(block, 'ADDRESS', pythonGenerator.ORDER_ATOMIC) || "address"
+  const port = pythonGenerator.valueToCode(block, 'PORT', pythonGenerator.ORDER_ATOMIC) || "port"
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  return `mqtt.connectTCP(${address}, ${port})\n`
+}
+javascriptGenerator.forBlock['dsx_mqttConnect'] = function (block) {
+  const address = javascriptGenerator.valueToCode(block, 'ADDRESS', javascriptGenerator.ORDER_ATOMIC) || "address"
+  const port = javascriptGenerator.valueToCode(block, 'PORT', javascriptGenerator.ORDER_ATOMIC) || "port"
+  return `spMqttWrite('wifiConnect', 255,85,192,2,${address},${port})\n` // 后四位传递方式和wifiConnect相同, 共用
+}
+
+/* 积木: mqtt连接是否成功 */
+blockInit("dsx_mqttConnectOk", {
+  message0: "物联服务端是否成功连接",
+  previousStatement: undefined,
+  nextStatement: undefined,
+  output: "Boolean"
+})
+pythonGenerator.forBlock['dsx_mqttConnectOk'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  return `mqtt.checkMqtt()\n`
+}
+javascriptGenerator.forBlock['dsx_mqttConnectOk'] = function (block) {
+  return [`spRead("tag_uint8", 255,85,33,2,0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
 }

@@ -44,7 +44,7 @@ const blocklyWorkspace = ref(null)
 const code = ref()
 
 function showModChange(editAreaModV, isOnlineRun) {
-  console.log(isOnlineRun)
+  // console.log(isOnlineRun)
   showMod.value = editAreaModV
   if (isOnlineRun) {
     code.value = javascriptGenerator.workspaceToCode(blocklyWorkspace.value.workspace)

@@ -109,6 +109,7 @@ export default {
                   break
                 case "tag_short":
                   this.readVal = byteToDec([this.chunk[6], this.chunk[7]])
+                  console.log(this.readVal)
                   break
                 case "tag_int":
                   this.readVal = byteToDec([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]])
@@ -204,7 +205,7 @@ function msDelay (t) {
 // 字节转short 
 function byteToDec(arr) {
   let s = 0, l = arr.length
-  for (let i=0; i<l-1; i++) {
+  for (let i=0; i<l; i++) {
     s += arr[i] << (8*(l-1-i))
   }
   return s

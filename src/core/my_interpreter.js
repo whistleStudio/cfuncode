@@ -1,5 +1,6 @@
 /* 初始化自定义解释器 
 参考: https://neil.fraser.name/software/JS-Interpreter/docs.html
+注意: console重定义了，控制台打印window.console.log
 */
 
 import sp from "./sp"
@@ -147,7 +148,33 @@ function initApi(interpreter, globalObject) {
     'spOledChWrite',
     interpreter.createNativeFunction(wrapper)
   )
+
+  // implenmentation: spMqttWrite()
+  interpreter.setProperty(
+    globalObject, 
+    'spMqttWrite',
+    interpreter.createNativeFunction((tag, b0, b1, b2, b3, ...args) => {
+      let addArgs = []
+      window.console.log(tag)
+      const encoder = new TextEncoder()
+      switch (tag) {
+        case "wifiConnect":
+          var [ssid, pwd] = args
+          var ssidBytes = encoder.encode(ssid), pwdBytes = encoder.encode(pwd)
+          addArgs = bytesArrAdd0([...ssidBytes, 0, ...pwdBytes, 0], 36)
+          break
+        case "mqttSet":
+          var [username, id, pwd] = args
+          var usernameBytes = encoder.encode(username), idBytes = encoder.encode(id), pwdBytes = encoder.encode(pwd)
+          addArgs = bytesArrAdd0([...usernameBytes, 0, ...idBytes, 0, ...pwdBytes, 0], 36)
+          break
+      }
+      sp.spOut([b0, b1, b2, b3, ...addArgs])
+    })
+  )
 }
+
+
 
 // 无符号short转双字节， 高左
 function unsignedShortToByte2(s){
@@ -165,3 +192,10 @@ function floatToByte4 (float_num) {
   return (new Uint8Array(buffer)).reverse();
 }
 
+// 补0
+function bytesArrAdd0 (bytesArr, totalL) {
+  if (bytesArr.length < totalL) {
+    return [...bytesArr, ...(Array(totalL-bytesArr.length).fill(0))]
+  }
+  return bytesArr
+}
