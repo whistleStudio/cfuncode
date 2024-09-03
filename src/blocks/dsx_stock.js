@@ -397,9 +397,10 @@ pythonGenerator.forBlock['dsx_ultrasonicRead'] = function (block) {
   return [`ultr${t}${e}.readDistance()`, pythonGenerator.ORDER_ATOMIC]
 }
 javascriptGenerator.forBlock['dsx_ultrasonicRead'] = function (block) {
-  const t = block.getFieldValue('T'), e = block.getFieldValue('E') // 高4位T, 低4位E
+  const t = parseInt(block.getFieldValue('T')), e = parseInt(block.getFieldValue('E')) // 高4位T, 低4位E
   let p = (t << 4) + e
-  return [`spRead("tag_float", 255,85,49,${p},0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
+  console.log(p)
+  return [`spRead("tag_float", 255,85,4,${p},0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
 }
 
 /* 积木: IC射频 */
@@ -764,7 +765,7 @@ pythonGenerator.forBlock['dsx_wifiConnect'] = function (block) {
   const ssid = pythonGenerator.valueToCode(block, 'SSID', pythonGenerator.ORDER_ATOMIC) || "name"
   const pwd = pythonGenerator.valueToCode(block, 'PWD', pythonGenerator.ORDER_ATOMIC) || "password"
   pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
-  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
   return `mqtt.connectWiFi(${ssid}, ${pwd})\n`
 }
 javascriptGenerator.forBlock['dsx_wifiConnect'] = function (block) {
@@ -782,7 +783,7 @@ blockInit("dsx_wifiConnectOk", {
 })
 pythonGenerator.forBlock['dsx_wifiConnectOk'] = function (block) {
   pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
-  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
   return `mqtt.checkWiFi()\n`
 }
 javascriptGenerator.forBlock['dsx_wifiConnectOk'] = function (block) {
@@ -803,7 +804,7 @@ pythonGenerator.forBlock['dsx_mqttSet'] = function (block) {
   const id = pythonGenerator.valueToCode(block, 'ID', pythonGenerator.ORDER_ATOMIC) || "id"
   const pwd = pythonGenerator.valueToCode(block, 'PWD', pythonGenerator.ORDER_ATOMIC) || "password"
   pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
-  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
   return `mqtt.setMqtt(${username}, ${id}, ${pwd})\n`
 }
 javascriptGenerator.forBlock['dsx_mqttSet'] = function (block) {
@@ -825,7 +826,7 @@ pythonGenerator.forBlock['dsx_mqttConnect'] = function (block) {
   const address = pythonGenerator.valueToCode(block, 'ADDRESS', pythonGenerator.ORDER_ATOMIC) || "address"
   const port = pythonGenerator.valueToCode(block, 'PORT', pythonGenerator.ORDER_ATOMIC) || "port"
   pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
-  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
   return `mqtt.connectTCP(${address}, ${port})\n`
 }
 javascriptGenerator.forBlock['dsx_mqttConnect'] = function (block) {
@@ -843,9 +844,67 @@ blockInit("dsx_mqttConnectOk", {
 })
 pythonGenerator.forBlock['dsx_mqttConnectOk'] = function (block) {
   pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
-  pythonGenerator.definitions_[`mqtt_init`] = `mqtt =MQTT()\n`
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
   return `mqtt.checkMqtt()\n`
 }
 javascriptGenerator.forBlock['dsx_mqttConnectOk'] = function (block) {
   return [`spRead("tag_uint8", 255,85,33,2,0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
+}
+
+/* 积木: mqtt断开 */
+blockInit("dsx_mqttDisconnect", {
+  message0: "断开物联服务端"
+})
+pythonGenerator.forBlock['dsx_mqttDisconnect'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
+  return `mqtt.cleanMqtt()\n`
+}
+javascriptGenerator.forBlock['dsx_mqttDisconnect'] = function (block) {
+  return [`spRead("tag_uint8", 255,85,197,0,0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
+}
+
+/* 积木: mqtt发布语句主题 */
+blockInit("dsx_mqttPublishStr", {
+  message0: "发布主题: %1,  语句: %2 的消息",
+  args0: [
+    { type: "input_value", name: "TOPIC"},
+    { type: "input_value", name: "MSG"}
+  ],
+  tooltip: "web端会话监听主题: Cmsg"
+})
+pythonGenerator.forBlock['dsx_mqttPublishStr'] = function (block) {
+  const topic = pythonGenerator.valueToCode(block, 'TOPIC', pythonGenerator.ORDER_ATOMIC) || "Cmsg"
+  const msg = pythonGenerator.valueToCode(block, 'MSG', pythonGenerator.ORDER_ATOMIC) || "Greetings from dsx"
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
+  return `mqtt.publishStr(${topic}, ${msg})\n`
+}
+javascriptGenerator.forBlock['dsx_mqttPublishStr'] = function (block) {
+  const topic = javascriptGenerator.valueToCode(block, 'TOPIC', javascriptGenerator.ORDER_ATOMIC) || "Cmsg"
+  const msg = javascriptGenerator.valueToCode(block, 'MSG', javascriptGenerator.ORDER_ATOMIC) || "Greetings from dsx"
+  return `spMqttWrite('wifiConnect', 255,85,195,0,${topic},${msg})\n` // 后四位传递方式和wifiConnect相同, 共用
+}
+
+/* 积木: mqtt发布数值主题 */
+blockInit("dsx_mqttPublishNum", {
+  message0: "发布主题: %1,  数值A: %2,  数值B: %3,  数值C: %4, 数值D: %5 的消息",
+  args0: [
+    { type: "input_value", name: "TOPIC"},
+    { type: "input_value", name: "DATAA"}, { type: "input_value", name: "DATAB"}, { type: "input_value", name: "DATAC"}, { type: "input_value", name: "DATAD"},
+  ],
+  tooltip: "web端数据A-D主题: Cnum1, 数据E-H主题: Cnum2"
+})
+pythonGenerator.forBlock['dsx_mqttPublishNum'] = function (block) {
+  const topic = pythonGenerator.valueToCode(block, 'TOPIC', pythonGenerator.ORDER_ATOMIC) || "Cnum1"
+  const dataA = pythonGenerator.valueToCode(block, 'DATAA', pythonGenerator.ORDER_ATOMIC) || 1, dataB = pythonGenerator.valueToCode(block, 'DATAB', pythonGenerator.ORDER_ATOMIC) || 2, dataC = pythonGenerator.valueToCode(block, 'DATAC', pythonGenerator.ORDER_ATOMIC) || 3, dataD = pythonGenerator.valueToCode(block, 'DATAD', pythonGenerator.ORDER_ATOMIC) || 4
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
+  return `mqtt.publishNum(${topic}, ${dataA}, ${dataB}, ${dataC}, ${dataD})\n`
+}
+javascriptGenerator.forBlock['dsx_mqttPublishNum'] = function (block) {
+  const topic = javascriptGenerator.valueToCode(block, 'TOPIC', javascriptGenerator.ORDER_ATOMIC) || "Cnum1"
+  const dataA = javascriptGenerator.valueToCode(block, 'DATAA', javascriptGenerator.ORDER_ATOMIC) || 1, dataB = javascriptGenerator.valueToCode(block, 'DATAB', javascriptGenerator.ORDER_ATOMIC) || 2, dataC = javascriptGenerator.valueToCode(block, 'DATAC', javascriptGenerator.ORDER_ATOMIC) || 3, dataD = javascriptGenerator.valueToCode(block, 'DATAD', javascriptGenerator.ORDER_ATOMIC) || 4
+  
+  return `spMqttWrite('publishNum', 255,85,194,0,${topic},${dataA},${dataB},${dataC},${dataD})\n` // 后四位传递方式和wifiConnect相同, 共用
 }

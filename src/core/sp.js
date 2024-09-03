@@ -116,6 +116,7 @@ export default {
                   break
                 case "tag_float":
                   this.readVal = byteToFloat([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]]).toFixed(2)
+                  // this.readVal = byteToFloat([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]])
                   break
                 case "tag_boardKey":
                   this.readVal = !Boolean(this.chunk[7])
@@ -213,7 +214,10 @@ function byteToDec(arr) {
 
 // 4字节转float32
 function byteToFloat(buf) {
-  buf.reverse();
-  let buf32 =  new Float32Array(buf.buffer);
-  return buf32[0];
+  // buf.reverse();
+  var view = new DataView(new ArrayBuffer(buf.length))
+  for (var i = 0; i < buf.length; i++) {
+    view.setUint8(i, buf[i]);
+  }
+  return view.getFloat32()
 }

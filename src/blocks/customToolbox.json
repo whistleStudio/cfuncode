@@ -423,6 +423,78 @@
         {
           "kind": "BLOCK",
           "type": "dsx_mqttConnectOk"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mqttDisconnect"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mqttPublishStr",
+          "inputs": {
+            "TOPIC": {
+              "shadow": {
+                  "type": "text",
+                  "fields": {
+                    "TEXT": "Cmsg"
+                  }
+              }
+            },
+            "MSG": {
+              "shadow": {
+                  "type": "text",
+                  "fields": {
+                    "TEXT": "Greetings from dsx"
+                  }
+              }
+            }
+          }
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mqttPublishNum",
+          "inputs": {
+            "TOPIC": {
+              "shadow": {
+                  "type": "text",
+                  "fields": {
+                    "TEXT": "Cnum1"
+                  }
+              }
+            },
+            "DATAA": {
+                "shadow": {
+                  "type": "math_number",
+                  "fields": {
+                    "NUM": 1
+                  }
+                }
+            },
+            "DATAB": {
+              "shadow": {
+                "type": "math_number",
+                "fields": {
+                  "NUM": 2
+                }
+              }
+            },
+            "DATAC": {
+              "shadow": {
+                "type": "math_number",
+                "fields": {
+                  "NUM": 3
+                }
+              }
+            },
+            "DATAD": {
+              "shadow": {
+                "type": "math_number",
+                "fields": {
+                  "NUM": 4
+                }
+              }
+            }
+          } 
         }
       ]
     }

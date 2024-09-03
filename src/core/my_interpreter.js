@@ -168,6 +168,11 @@ function initApi(interpreter, globalObject) {
           var usernameBytes = encoder.encode(username), idBytes = encoder.encode(id), pwdBytes = encoder.encode(pwd)
           addArgs = bytesArrAdd0([...usernameBytes, 0, ...idBytes, 0, ...pwdBytes, 0], 36)
           break
+        case "publishNum":
+          var [topic, dataA, dataB, dataC, dataD] = args
+          var topicBytes = encoder.encode(topic)
+          addArgs = bytesArrAdd0([...topicBytes, 0, ...floatToByte4(dataA), ...floatToByte4(dataB), ...floatToByte4(dataC), ...floatToByte4(dataD), 0])
+          break
       }
       sp.spOut([b0, b1, b2, b3, ...addArgs])
     })
