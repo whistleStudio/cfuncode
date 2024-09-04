@@ -95,6 +95,19 @@ function initApi(interpreter, globalObject) {
     interpreter.createAsyncFunction(wrapper)
   )
 
+  // implenmentation: spWeighRead()
+  interpreter.setProperty(
+    globalObject, 
+    'spWeighRead',
+    interpreter.createAsyncFunction((tag, sck, dt, offset, k, callback) => {
+      sp.readTag = tag
+      const p = (sck << 4) + dt, offsetBytes = floatToByte4(offset), kBytes = floatToByte4(k)
+      sp.spOut([255, 85, 14, p, ...offsetBytes, ...kBytes])
+      setTimeout(()=>{window.console.log("timeout readval:", sp.readVal);callback(sp.readVal)}, 150) // 延迟根据硬件传输与数据处理时长而定，需确保可靠返回
+      return 0
+    })
+  )
+
   // implenmentation: spPwmWrite()
   var wrapper = function (pin, freq, duty) {
     let f = unsignedShortToByte2(freq)

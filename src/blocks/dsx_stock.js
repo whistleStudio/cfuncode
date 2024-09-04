@@ -4,7 +4,7 @@
 import * as Blockly from 'blockly/core';
 import {pythonGenerator, Order} from 'blockly/python';
 import themeJson from "../assets/theme/theme.json"
-import { javascriptGenerator } from 'blockly/javascript';
+import { JavascriptGenerator, javascriptGenerator } from 'blockly/javascript';
 import { customBlockProps, blockInit } from './customBlockInit';
 
 const dsxColor = themeJson.categoryStyles.dsx.colour 
@@ -331,12 +331,14 @@ javascriptGenerator.forBlock['dsx_dht11Read'] = function (block) {
   return [`spRead("tag_uint8", 255,85,${optV},${pin},0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
 }
 
-/* 积木: 称重 */
+/* 积木: 称重 （离线要改）*/
 blockInit("dsx_weighRead", {
-  message0: "读取SCK:引脚%1,  DT:引脚%2上称重传感器的值",
+  message0: "读取SCK:引脚%1,  DT:引脚%2上称重传感器的值 (零偏克数:%3,  矫正系数:%4)",
   args0: [
     { type: "field_dropdown", name: "SCK", options: [['1', "1"], ['2', "2"], ['5', "5"], ['8', "8"], ['11', "11"], ['12', "12"],['13', "13"], ['14', "14"], ['15', "15"], ['19', "19"], ['20', "20"]] },
     { type: "field_dropdown", name: "DT", options: [['1', "1"], ['2', "2"], ['5', "5"], ['8', "8"], ['11', "11"], ['12', "12"],['13', "13"], ['14', "14"], ['15', "15"], ['19', "19"], ['20', "20"]] },
+    { type: "input_value", name: "OFFSET", check: "Number"},
+    { type: "input_value", name: "K", check: "Number"},
   ],
   previousStatement: undefined,
   nextStatement: undefined,
@@ -344,16 +346,16 @@ blockInit("dsx_weighRead", {
 })
 
 pythonGenerator.forBlock['dsx_weighRead'] = function (block) {
-  const sck = block.getFieldValue('SCK')
-  const dt = block.getFieldValue('DT')
+  const sck = block.getFieldValue('SCK'), dt = block.getFieldValue('DT')
+  const offset = pythonGenerator.valueToCode(block, 'OFFSET', pythonGenerator.ORDER_ATOMIC) || 0, k = pythonGenerator.valueToCode(block, 'K', pythonGenerator.ORDER_ATOMIC) || 1.0
   pythonGenerator.definitions_["from_machine_import_Weigh"] = "from machine import Weigh\n"
   pythonGenerator.definitions_[`weigh${sck}${dt}_init`] = `weigh${sck}${dt} = Weigh(${sck}, ${dt})\n`
-  return [`weigh${sck}${dt}.read()`, pythonGenerator.ORDER_ATOMIC]
+  return [`weigh${sck}${dt}.read(${offset}, ${k})`, pythonGenerator.ORDER_ATOMIC]
 }
 javascriptGenerator.forBlock['dsx_weighRead'] = function (block) {
-  const sck = block.getFieldValue('SCK')
-  const dt = block.getFieldValue('DT')
-  return [`spRead("tag_short", 255,85,14,${sck},${dt},0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
+  const sck = block.getFieldValue('SCK'), dt = block.getFieldValue('DT')
+  const offset = javascriptGenerator.valueToCode(block, 'OFFSET', javascriptGenerator.ORDER_ATOMIC) || 0, k = javascriptGenerator.valueToCode(block, 'K', javascriptGenerator.ORDER_ATOMIC) || 1.0
+  return [`spWeighRead('tag_float', ${sck}, ${dt}, ${offset}, ${k})`, javascriptGenerator.ORDER_ATOMIC]
 }
 
 /* 积木: 颜色识别 */
@@ -907,4 +909,102 @@ javascriptGenerator.forBlock['dsx_mqttPublishNum'] = function (block) {
   const dataA = javascriptGenerator.valueToCode(block, 'DATAA', javascriptGenerator.ORDER_ATOMIC) || 1, dataB = javascriptGenerator.valueToCode(block, 'DATAB', javascriptGenerator.ORDER_ATOMIC) || 2, dataC = javascriptGenerator.valueToCode(block, 'DATAC', javascriptGenerator.ORDER_ATOMIC) || 3, dataD = javascriptGenerator.valueToCode(block, 'DATAD', javascriptGenerator.ORDER_ATOMIC) || 4
   
   return `spMqttWrite('publishNum', 255,85,194,0,${topic},${dataA},${dataB},${dataC},${dataD})\n` // 后四位传递方式和wifiConnect相同, 共用
+}
+
+/* 积木: mqtt订阅主题 (在线缺参) */
+blockInit("dsx_mqttSubscribe", {
+  message0: "订阅设备: %1,  主题: %2的消息",
+  args0: [
+    { type: "input_value", name: "ID"},
+    { type: "input_value", name: "TOPIC"},
+  ],
+  tooltip: "web端发送会话主题: CmsgW, 按钮主题: Cbtn, 滑杆主题: Cran"
+})
+pythonGenerator.forBlock['dsx_mqttSubscribe'] = function (block) {
+  const id = pythonGenerator.valueToCode(block, 'ID', pythonGenerator.ORDER_ATOMIC) || "1", topic = pythonGenerator.valueToCode(block, 'TOPIC', pythonGenerator.ORDER_ATOMIC) || "CmsgW"
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
+  return `mqtt.subscribe(${id}, ${topic})\n`
+}
+javascriptGenerator.forBlock['dsx_mqttSubscribe'] = function (block) {
+  const id = javascriptGenerator.valueToCode(block, 'ID', javascriptGenerator.ORDER_ATOMIC) || "1", topic = javascriptGenerator.valueToCode(block, 'TOPIC', javascriptGenerator.ORDER_ATOMIC) || "CmsgW"
+  
+  return `spMqttWrite('publishNum', 255,85,194,0,${topic},${dataA},${dataB},${dataC},${dataD})\n` // 后四位传递方式和wifiConnect相同, 共用
+}
+
+/* 积木: mqtt取消订阅主题 (在线缺参) */
+blockInit("dsx_mqttUnsubscribe", {
+  message0: "取消订阅设备: %1,  主题: %2的消息",
+  args0: [
+    { type: "input_value", name: "ID"},
+    { type: "input_value", name: "TOPIC"},
+  ],
+  tooltip: "web端发送会话主题: CmsgW, 按钮主题: Cbtn, 滑杆主题: Cran"
+})
+pythonGenerator.forBlock['dsx_mqttUnsubscribe'] = function (block) {
+  const id = pythonGenerator.valueToCode(block, 'ID', pythonGenerator.ORDER_ATOMIC) || "1", topic = pythonGenerator.valueToCode(block, 'TOPIC', pythonGenerator.ORDER_ATOMIC) || "CmsgW"
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
+  return `mqtt.unsubscribe(${id}, ${topic})\n`
+}
+javascriptGenerator.forBlock['dsx_mqttUnsubscribe'] = function (block) {
+  const id = javascriptGenerator.valueToCode(block, 'ID', javascriptGenerator.ORDER_ATOMIC) || "1", topic = javascriptGenerator.valueToCode(block, 'TOPIC', javascriptGenerator.ORDER_ATOMIC) || "CmsgW"
+  
+  return `spMqttWrite('publishNum', 255,85,194,0,${topic},${dataA},${dataB},${dataC},${dataD})\n` // 后四位传递方式和wifiConnect相同, 共用
+}
+
+/* 积木: 是否获得到指定主题数据 */
+blockInit("dsx_mqttReadData", {
+  message0: "是否获取到设备:  %1, 主题: %2的数据",
+  args0: [
+    { type: "input_value", name: "ID"},
+    { type: "input_value", name: "TOPIC"},
+  ],
+  previousStatement: undefined,
+  nextStatement: undefined,
+  output: "Boolean"
+})
+pythonGenerator.forBlock['dsx_mqttReadData'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
+  const id = pythonGenerator.valueToCode(block, 'ID', pythonGenerator.ORDER_ATOMIC) || "1", topic = pythonGenerator.valueToCode(block, 'TOPIC', pythonGenerator.ORDER_ATOMIC) || "CmsgW"
+  return `mqtt.readData(${id}, ${topic})\n`
+}
+javascriptGenerator.forBlock['dsx_mqttReadData'] = function (block) {
+  // 补充: 更新localData
+  return [`spRead("tag_uint8", 255,85,33,2,0,0,0,0)`, javascriptGenerator.ORDER_ATOMIC]
+}
+
+/* 积木: 物联语句 */
+blockInit("dsx_mqttString", {
+  message0: "获取的物联语句",
+  previousStatement: undefined,
+  nextStatement: undefined,
+  output: "String"
+})
+pythonGenerator.forBlock['dsx_mqttString'] = function (block) {
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
+  return `mqtt.mqtt_string()\n`
+}
+javascriptGenerator.forBlock['dsx_mqttString'] = function (block) {
+  return [`getMqttData(4)`, javascriptGenerator.ORDER_ATOMIC]
+}
+
+/* 积木: 物联数值 */
+blockInit("dsx_mqttData", {
+  message0: "获取的物联%1",
+  args0: [{ type: "field_dropdown", name: "DATA", options: [["数值A", "0"], ["数值B", "1"], ["数值C", "2"], ["数值D", "3"]] }],
+  previousStatement: undefined,
+  nextStatement: undefined,
+  output: "Number"
+})
+pythonGenerator.forBlock['dsx_mqttData'] = function (block) {
+  const data = block.getFieldValue('DATA')
+  pythonGenerator.definitions_["from_machine_import_MQTT"] = "from machine import MQTT\n"
+  pythonGenerator.definitions_[`mqtt_init`] = `mqtt = MQTT()\n`
+  return `mqtt.mqtt_data${String.fromCharCode(65+data)}()\n` // 有问题
+}
+javascriptGenerator.forBlock['dsx_mqttData'] = function (block) {
+  return [`getMqttData(4)`, javascriptGenerator.ORDER_ATOMIC]
 }

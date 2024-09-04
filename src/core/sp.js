@@ -13,6 +13,7 @@ export default {
   readTag: null,
   readVal: 0,
   chunk:[],
+  mqttLocalData: [0, 0, 0, 0, ""], //mqtt 获取订阅主题获取到的数据
   // 浏览器校验
   checkBrowser: function (cb) {
     if (!"serial" in navigator) {
@@ -116,6 +117,7 @@ export default {
                   break
                 case "tag_float":
                   this.readVal = byteToFloat([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]]).toFixed(2)
+                  console.log(this.readVal)
                   // this.readVal = byteToFloat([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]])
                   break
                 case "tag_boardKey":

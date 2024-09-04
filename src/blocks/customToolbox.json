@@ -98,7 +98,25 @@
         },
         {
           "kind": "BLOCK",
-          "type": "dsx_weighRead"
+          "type": "dsx_weighRead",
+          "inputs": {
+            "OFFSET": {
+                "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                        "NUM": 0
+                    }
+                }
+            },
+            "K": {
+                "shadow": {
+                    "type": "math_number",
+                    "fields": {
+                        "NUM": 1.0
+                    }
+                }
+            }
+          }
         },
         {
           "kind": "BLOCK",
@@ -495,6 +513,80 @@
               }
             }
           } 
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mqttSubscribe",
+          "inputs": {
+            "ID": {
+              "shadow": {
+                "type": "text",
+                "fields": {
+                  "TEXT": "1"
+                }
+              }
+            },
+            "TOPIC": {
+              "shadow": {
+                "type": "text",
+                "fields": {
+                  "TEXT": "CmsgW"
+                }
+              }
+            }
+          }
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mqttUnsubscribe",
+          "inputs": {
+            "ID": {
+              "shadow": {
+                "type": "text",
+                "fields": {
+                  "TEXT": "1"
+                }
+              }
+            },
+            "TOPIC": {
+              "shadow": {
+                "type": "text",
+                "fields": {
+                  "TEXT": "CmsgW"
+                }
+              }
+            }
+          }
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mqttReadData",
+          "inputs": {
+            "ID": {
+              "shadow": {
+                "type": "text",
+                "fields": {
+                  "TEXT": "1"
+                }
+              }
+            },
+            "TOPIC": {
+              "shadow": {
+                "type": "text",
+                "fields": {
+                  "TEXT": "CmsgW"
+                }
+              }
+            }
+          }
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mqttString"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "dsx_mqttData"
         }
       ]
     }
