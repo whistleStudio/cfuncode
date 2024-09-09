@@ -12,7 +12,8 @@ import * as Blockly from 'blockly/core';
 import * as Zh from "blockly/msg/zh-hans"
 import toolboxJson from "../../assets/toolbox.json"
 import bus from "../../core/bus"
-import customToolboxJson from "../../blocks/customToolbox.json"
+import dsxToolboxJson from "../../blocks/dsxToolbox.json"
+import pybToolboxJson from "../../blocks/pybToolbox.json"
 
 /* 语言，色调设置 */
 Blockly.setLocale(Zh)
@@ -41,25 +42,40 @@ function onOpenExtLib (ev) {
 function addExt ({extIdx, extSta, extIcon}) {
   console.log("addExt")
   const l = toolboxJson.contents.length
-  // let curExt = []
+  let curToolboxContents = []
   switch (extIdx) {
     case 0:
-      for (let i in Array(6).fill(0)) { // 大师兄模块组
-        if (extSta) {
-          toolboxJson.contents.push(customToolboxJson.contents[i])
-          cateIconClassList.push(extIcon)
-          // curExt = customToolboxJson.contents.slice(0, 2)
-          // toolboxJson.contents.splice(l, 0, ...curExt)
-          // cateIconClassList.push(extIcon)
-        } else {
-          toolboxJson.contents.pop()
-          cateIconClassList.pop()
-        }
-      }
-      workspace.value.updateToolbox(toolboxJson)
-      addCateIcon() //默认类目图标
+      curToolboxContents = dsxToolboxJson.contents
+      // for (let i in Array(6).fill(0)) { // 大师兄模块组
+      //   if (extSta) {
+      //     toolboxJson.contents.push(dsxToolboxJson.contents[i])
+      //     cateIconClassList.push(extIcon)
+      //     // curExt = dsxToolboxJson.contents.slice(0, 2)
+      //     // toolboxJson.contents.splice(l, 0, ...curExt)
+      //     // cateIconClassList.push(extIcon)
+      //   } else {
+      //     toolboxJson.contents.pop()
+      //     cateIconClassList.pop()
+      //   }
+      // }
+      // workspace.value.updateToolbox(toolboxJson)
+      // addCateIcon() //默认类目图标
+      break
+    case 1:
+      curToolboxContents = pybToolboxJson.contents
       break
   }
+  for (let v of curToolboxContents) {
+    if (extSta) {
+      toolboxJson.contents.push(v)
+      cateIconClassList.push(extIcon)
+    } else {
+      toolboxJson.contents.pop()
+      cateIconClassList.pop()
+    }
+  }
+  workspace.value.updateToolbox(toolboxJson)
+  addCateIcon() //默认类目图标
 }
 
 /* 目录添加图标 */

@@ -9,7 +9,7 @@ export default {
   isReading: false,
   curPercent: 0, 
   isUploading: false,
-  USBVENDORID: 6790,
+  USBVENDORID: [{ usbVendorId: 6790 }, { usbVendorId: 61525 }],
   readTag: null,
   readVal: 0,
   chunk:[],
@@ -38,7 +38,8 @@ export default {
   // 串口连接
   spConnect: async function (isOnlineRun, success, fail) {
     try {
-      this.port = await navigator.serial.requestPort({ filters: [{ usbVendorId: this.USBVENDORID }] }); // 弹出系统串口列表对话框，选择一个串口进行连
+      // this.port = await navigator.serial.requestPort({ filters: [{ usbVendorId: this.USBVENDORID }] }); // 弹出系统串口列表对话框，选择一个串口进行连
+      this.port = await navigator.serial.requestPort({filters: this.USBVENDORID}); // 弹出系统串口列表对话框，选择一个串口进行连
       console.log("*******", this.port.getInfo())
       if (this.port === null) {
         console.log("串口已断开");
@@ -94,11 +95,12 @@ export default {
       try {
         while (true) {
           const { value, done } = await this.reader.read();
+          console.log("读取类返回(现):", value)
           // 解析串口读取数值 高位左
           if (this.readTag) {
             this.chunk = [...this.chunk, ...value]
             if (this.chunk.length == 8) { // 大多数读取适配
-              console.log("sp read:", this.chunk) // 有时会丢数据需要额外处理
+              console.log("读取类返回(8字节)::", this.chunk) // 有时会丢数据需要额外处理
               switch (this.readTag) {
                 case "tag_uint8":
                   this.readVal = this.chunk[7]
@@ -163,6 +165,8 @@ export default {
       console.log("#Upload start")
       await this.writer.write(new Uint8Array([3, 7]).buffer)
       await msDelay(3000)
+      await this.writer.write(new TextEncoder().encode("#\n")) // 智能主控需要
+      await msDelay(10)
       for (let v of codeArr) {
         let lineU8Code = new TextEncoder().encode(v+"\n")
         await this.writer.write(lineU8Code.buffer)

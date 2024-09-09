@@ -1,0 +1,72 @@
+{
+  "cmt": "categorystyle关联theme.json文件",
+
+  "contents": [
+    {
+      "kind": "CATEGORY",
+      "name": "硬件基础",
+      "categorystyle": "pyb",
+      "contents": [
+        {
+          "kind": "BLOCK",
+          "type": "pyb_start"
+        }
+      ]
+    },
+    {
+      "kind": "CATEGORY",
+      "name": "智能车集成",
+      "categorystyle": "pyb",
+      "contents": [
+        {
+          "kind": "LABEL",
+          "text": "基础运动:"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "pyb_moveByT",
+          "inputs": {
+            "SPEED": {
+              "shadow": {
+                "type": "math_number",
+                "fields": {
+                  "NUM": 50
+                }
+              }
+            },
+            "T": {
+              "shadow": {
+                "type": "math_number",
+                "fields": {
+                  "NUM": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "kind": "LABEL",
+          "text": "循迹控制:"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "pyb_grayTest"
+        },
+        {
+          "kind": "BLOCK",
+          "type": "pyb_setGray",
+          "inputs": {
+            "THRESHOLD": {
+              "shadow": {
+                "type": "math_number",
+                "fields": {
+                  "NUM": 600
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -7,9 +7,10 @@
       "iconClassName": "iconDsx"  
     },
     {
-      "src": "https://dict.cfunworld.com/img/public/notfound700x350.png",
-      "title": "旺铺招租1",
-      "des": "www.cfunworld.com"
+      "src": "/public/img/extlib/py-board.png",
+      "title": "智能主控器",
+      "des": "www.cfunworld.com",
+      "iconClassName": "iconPyb"
     },
     {
       "src": "https://dict.cfunworld.com/img/public/notfound700x350.png",

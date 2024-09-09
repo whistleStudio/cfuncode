@@ -9,6 +9,9 @@
      },
      "dsx": {
       "colour": "#177ecc"
+     },
+     "pyb": {
+      "colour": "#7391b4"
      }
   },
   "componentStyles" : {

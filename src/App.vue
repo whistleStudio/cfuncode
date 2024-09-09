@@ -11,6 +11,7 @@
 import bus from "./core/bus"
 import * as libraryBlocks from 'blockly/blocks'; // 预制blocks必须
 import './blocks/dsx_stock';
+import './blocks/pyb_stock'
 import './blocks/default_stock'
 import toolboxJson from "./assets/toolbox.json"
 import themeJson from "./assets/theme/theme.json"

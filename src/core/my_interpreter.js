@@ -103,7 +103,7 @@ function initApi(interpreter, globalObject) {
       sp.readTag = tag
       const p = (sck << 4) + dt, offsetBytes = floatToByte4(offset), kBytes = floatToByte4(k)
       sp.spOut([255, 85, 14, p, ...offsetBytes, ...kBytes])
-      setTimeout(()=>{window.console.log("timeout readval:", sp.readVal);callback(sp.readVal)}, 150) // 延迟根据硬件传输与数据处理时长而定，需确保可靠返回
+      setTimeout(()=>{window.console.log("timeout readval:", sp.readVal);callback(sp.readVal);sp.readVal = 0}, 150) // 延迟根据硬件传输与数据处理时长而定，需确保可靠返回
       return 0
     })
   )

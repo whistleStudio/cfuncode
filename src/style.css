@@ -156,3 +156,7 @@ ul {
 .iconDsx {
   background: url("/public/img/category/dsx.svg")       center/55% no-repeat !important;
 }
+
+.iconPyb {
+  background: url("/public/img/category/pyb.svg")       center/55% no-repeat !important;
+}
