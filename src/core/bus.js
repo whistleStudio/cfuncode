@@ -17,5 +17,6 @@ export default {
     });
   },
 
-  code: ""
+  code: "",
+  curDev: "dsx"
 }

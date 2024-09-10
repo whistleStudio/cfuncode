@@ -39,6 +39,8 @@ function onOpenExtLib (ev) {
   }  
 }
 /* 总线：添加扩展 */
+const devTypeList = ["dsx", "pyb"]
+
 function addExt ({extIdx, extSta, extIcon}) {
   console.log("addExt")
   const l = toolboxJson.contents.length
@@ -65,6 +67,7 @@ function addExt ({extIdx, extSta, extIcon}) {
       curToolboxContents = pybToolboxJson.contents
       break
   }
+  if (extIdx < devTypeList.length) bus.curDev = devTypeList[extIdx]
   for (let v of curToolboxContents) {
     if (extSta) {
       toolboxJson.contents.push(v)
