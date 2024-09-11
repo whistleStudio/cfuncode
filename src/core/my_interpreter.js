@@ -4,6 +4,7 @@
 */
 
 import sp from "./sp"
+import bus from "./bus"
 
 export default {
   runnerPid: 0,
@@ -34,6 +35,7 @@ export default {
   reset: function () {
     clearTimeout(this.runnerPid)
     this.interpreter = null
+    bus.emit("programFinish") // 更改Nav页开始/停止
   }
 }
 
@@ -84,9 +86,9 @@ function initApi(interpreter, globalObject) {
   // implenmentation: spRead() 
   var wrapper = function (tag, cmd0, cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7, callback) {
     // window.console.log(cmd, tag)
-    sp.readTag = tag
+    sp.dataReset(tag)
     sp.spOut([cmd0, cmd1, cmd2, cmd3, cmd4, cmd5, cmd6, cmd7])
-    setTimeout(()=>{window.console.log("timeout readval:", sp.readVal);callback(sp.readVal)}, 120) // 延迟根据硬件传输与数据处理时长而定，需确保可靠返回
+    setTimeout(()=>{window.console.log("回调传参:", sp.readVal);callback(sp.readVal)}, 160) // 延迟根据硬件传输与数据处理时长而定，需确保可靠返回
     return 0
   }
   interpreter.setProperty(
@@ -100,10 +102,10 @@ function initApi(interpreter, globalObject) {
     globalObject, 
     'spWeighRead',
     interpreter.createAsyncFunction((tag, sck, dt, offset, k, callback) => {
-      sp.readTag = tag
+      sp.dataReset(tag)
       const p = (sck << 4) + dt, offsetBytes = floatToByte4(offset), kBytes = floatToByte4(k)
       sp.spOut([255, 85, 14, p, ...offsetBytes, ...kBytes])
-      setTimeout(()=>{window.console.log("timeout readval:", sp.readVal);callback(sp.readVal);sp.readVal = 0}, 150) // 延迟根据硬件传输与数据处理时长而定，需确保可靠返回
+      setTimeout(()=>{window.console.log("回调传参:", sp.readVal);callback(sp.readVal);}, 150) // 延迟根据硬件传输与数据处理时长而定，需确保可靠返回
       return 0
     })
   )
@@ -160,6 +162,16 @@ function initApi(interpreter, globalObject) {
     globalObject, 
     'spOledChWrite',
     interpreter.createNativeFunction(wrapper)
+  )
+
+  // implenmentation: spServoWrite()
+  interpreter.setProperty(
+    globalObject, 
+    'spServoWrite',
+    interpreter.createNativeFunction((id, model, speed, angle) => {
+      const angleBytes = unsignedShortToByte2(angle)
+      sp.spOut([255, 85, 166, id, speed, model, ...angleBytes])
+    })
   )
 
   // implenmentation: spMqttWrite()

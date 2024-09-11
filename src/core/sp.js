@@ -14,6 +14,8 @@ export default {
   readVal: 0,
   chunk:[],
   mqttLocalData: [0, 0, 0, 0, ""], //mqtt 获取订阅主题获取到的数据
+  // sp部分数据重置
+  dataReset: function (tag=null) {this.readTag = tag; this.readVal = 0; this.chunk = []},
   // 浏览器校验
   checkBrowser: function (cb) {
     if (!"serial" in navigator) {
@@ -40,7 +42,7 @@ export default {
     try {
       // this.port = await navigator.serial.requestPort({ filters: [{ usbVendorId: this.USBVENDORID }] }); // 弹出系统串口列表对话框，选择一个串口进行连
       this.port = await navigator.serial.requestPort({filters: this.USBVENDORID}); // 弹出系统串口列表对话框，选择一个串口进行连
-      console.log("*******", this.port.getInfo())
+      // console.log("*******", this.port.getInfo())
       if (this.port === null) {
         console.log("串口已断开");
         return;
@@ -67,6 +69,7 @@ export default {
       }
       success()
       this.listenReceived(fail)
+      this.dataReset()
     } catch (e) {
         console.log(e); // The prompt has been dismissed without selecting a device.
     }  
@@ -96,6 +99,7 @@ export default {
         while (true) {
           const { value, done } = await this.reader.read();
           console.log("读取类返回(现):", value)
+          // console.log("chunk", this.chunk)
           // 解析串口读取数值 高位左
           if (this.readTag) {
             this.chunk = [...this.chunk, ...value]
@@ -119,7 +123,7 @@ export default {
                   break
                 case "tag_float":
                   this.readVal = byteToFloat([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]]).toFixed(2)
-                  console.log(this.readVal)
+                  console.log("tag_float", this.readVal)
                   // this.readVal = byteToFloat([this.chunk[4], this.chunk[5], this.chunk[6], this.chunk[7]])
                   break
                 case "tag_boardKey":

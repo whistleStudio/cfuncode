@@ -1,2 +1,8 @@
-let a = Array(8).fill(0).map((v, i) => (i+1).toString())
+let a = {
+  a:1,
+  b:2
+}
+
+a.a = 3, a.b =4;
+
 console.log(a)

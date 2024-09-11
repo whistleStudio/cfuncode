@@ -36,10 +36,10 @@
   </div>
   <div class="file flex-v-center">
     <ul class="flex-v-center">
-      <li v-for="(v, i) in ['新建', '打开', '上传', '开始']" :key="v" class="flex-v-center" @click="navRMenuClick(v)" 
+      <li v-for="(v, i) in navRMenuList" :key="v" class="flex-v-center" @click="navRMenuClick(v)" 
       v-show="i != 3-isOnlineRun">
         <!-- <img src="../../public/img/navr0.svg" alt=""> -->
-        <img :src="getImageUrl(`navr${i}.svg`)" width="30px" :height="i==0 ? '25px' : '35px'">
+        <img :src="getImageUrl(`navr_${v}.svg`)" width="30px" :height="i==0 ? '25px' : '35px'">
         <span>{{ v }}</span>
       </li>
       <a-switch class="switch-mode" @change="switchChange()" v-model:checked="isOnlineRun" checked-children="在线调试" un-checked-children="脱机运行" />
@@ -71,6 +71,7 @@ import {reactive, ref, defineEmits, defineProps, watch, onUnmounted, onMounted} 
 import { message } from 'ant-design-vue';
 import UploadProgress from "./UploadProgress.vue";
 import sp from "../../core/sp"
+import my_interpreter from '../../core/my_interpreter';
 
 
 const [messageApi, contextHolder] = message.useMessage();
@@ -96,9 +97,8 @@ const modOpt = ref([
 const editAreaMod = ref('block');
 const emits = defineEmits(["showModChange", "updateProgress"])
 const uploadPercent = ref(0), isUploading = ref(false)
-const aMenuItemList = reactive([
-  "连接串口", "调试工具", "固件上传", "帮助说明" 
-])
+const navRMenuList = reactive(['新建', '打开', '上传', '开始'])
+const aMenuItemList = reactive(["连接串口", "调试工具", "固件上传", "帮助说明" ])
 const fileRef = ref(null), saveInputVal = ref(""), isSaved = ref(false)
 const isModalOpen = ref(false), isPrintOpen = ref(false), isOnlineRun = ref(false)
 const modalInfo = reactive({
@@ -173,14 +173,18 @@ function navRMenuClick (v) {
           await sp.spRun(
             () => {emits("showModChange", editAreaMod.value, isOnlineRun)}, //to app.vue
           )
+          navRMenuList[3] = "停止"
         } else sp.spConnect(isOnlineRun.value, connectSuccess, connectFail)
       })()
       break
+    case "停止":
+      my_interpreter.reset()
+      navRMenuList[3] = "开始"
   }
 }
 /* 运行模式切换 */
 function switchChange () {
-  console.log("moshi", isOnlineRun.value)
+  console.log("模式切换", isOnlineRun.value)
   sp.spClose(() => aMenuItemList[0] = "连接串口")
 }
 /* aMenu */
@@ -213,6 +217,7 @@ function connectFail() {aMenuItemList[0] = "连接串口"; messageApi.info('设�
 
 onMounted(()=>{
   sp.checkBrowser(()=>messageApi.error("当前浏览器不支持串口功能"))
+  bus.on("programFinish", () => {navRMenuList[3] = "开始"}) // my_interpreter执行reset触发
 })
 
 onUnmounted(() => {

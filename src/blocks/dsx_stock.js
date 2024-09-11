@@ -751,7 +751,7 @@ javascriptGenerator.forBlock['dsx_servo'] = function (block) {
   const id = block.getFieldValue('ID'), model = block.getFieldValue('MODEL'), speed = block.getFieldValue('SPEED')
   const angle = javascriptGenerator.valueToCode(block, 'ANGLE', javascriptGenerator.ORDER_ATOMIC) || 0
   // console.log(id, mode, id<<4 + mode)
-  return `spWrite(255,85,160,${byte3},0,0,0,${angle})\n`
+  return `spServoWrite(${id}, ${model}, ${speed}, ${angle})\n`
 }
 
 /* 无线通讯(在线有问题) */

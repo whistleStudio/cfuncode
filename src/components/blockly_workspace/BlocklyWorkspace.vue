@@ -48,20 +48,6 @@ function addExt ({extIdx, extSta, extIcon}) {
   switch (extIdx) {
     case 0:
       curToolboxContents = dsxToolboxJson.contents
-      // for (let i in Array(6).fill(0)) { // 大师兄模块组
-      //   if (extSta) {
-      //     toolboxJson.contents.push(dsxToolboxJson.contents[i])
-      //     cateIconClassList.push(extIcon)
-      //     // curExt = dsxToolboxJson.contents.slice(0, 2)
-      //     // toolboxJson.contents.splice(l, 0, ...curExt)
-      //     // cateIconClassList.push(extIcon)
-      //   } else {
-      //     toolboxJson.contents.pop()
-      //     cateIconClassList.pop()
-      //   }
-      // }
-      // workspace.value.updateToolbox(toolboxJson)
-      // addCateIcon() //默认类目图标
       break
     case 1:
       curToolboxContents = pybToolboxJson.contents
