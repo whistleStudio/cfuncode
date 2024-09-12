@@ -6,6 +6,7 @@ import {pythonGenerator, Order} from 'blockly/python';
 import themeJson from "../assets/theme/theme.json"
 import { JavascriptGenerator, javascriptGenerator } from 'blockly/javascript';
 import { customBlockProps, blockInit } from './customBlockInit';
+import str2gbk from 'str2gbk'; // 语音合成用
 
 const dsxColor = themeJson.categoryStyles.dsx.colour 
 customBlockProps.colour = dsxColor
@@ -603,6 +604,62 @@ pythonGenerator.forBlock['dsx_ttsSet'] = function (block) {
   return `tts.setMode(${foreVol}, ${backVol}, ${speed})\n`
 }
 javascriptGenerator.forBlock['dsx_ttsSet'] = function (block) {
+  const foreVol = block.getFieldValue('FOREVOL'), backVol = block.getFieldValue('BACKVOL'), speed = block.getFieldValue('SPEED')
+  return `spWrite(255,85,141,1,0,${foreVol},${backVol},${speed})\n`
+}
+
+/* 积木: 语音合成模式文本 */
+blockInit("dsx_ttsPlayText", {
+  message0: "%1语音合成模块播放%2%3,  背景乐为%4",
+  args0: [
+    { type: "field_dropdown", name: "ID", options: [["所有", "0"], ["1号", "1"], ["2号", "2"]]},
+    { type: "field_dropdown", name: "MODE", options: [["文本", "mode_text"], ["变量", "mode_var"]]},
+    { type: "input_value", name: "TEXT", check: "String"},
+    { type: "field_dropdown", name: "BGM", options: genOpt(Array(16).fill(0).map((v, i) => i.toString()))}
+  ],
+  tooltip: "选择变量模式时, 传入变量应为数值类型数据"
+})
+
+pythonGenerator.forBlock['dsx_ttsPlayText'] = function (block) {
+  const id = block.getFieldValue('ID'), mode = block.getFieldValue('MODE'), bgm = block.getFieldValue('BGM')
+  let text = pythonGenerator.valueToCode(block, 'TEXT', pythonGenerator.ORDER_ATOMIC) || "你好"
+  pythonGenerator.definitions_["from_machine_import_TTS"] = "from machine import TTS\n"
+  pythonGenerator.definitions_[`tts_init`] = `tts = TTS()\n`
+  if (mode == "mode_var") {
+    pythonGenerator.definitions_[`float2gbkFunc`] = `def float2gbk(s):
+  try:
+    s = '{:.2f}'.format(s)
+    text = ""
+    flag = False
+    count = 0
+    for i in s:
+      if i == ".":
+        text += "2E"
+        flag = True
+      else:
+        if flag:
+          count += 1   
+        text += str(int(i)+30)
+      if count == 2:
+        break
+    return text
+  except Exception as e:
+    return ""\n`
+    if (id == 0) {
+      return `tts.playTextH("20" + float2gbk(${text}), ${bgm})` // 变量全部 单个字符播放异常，开头补一个空格
+    }
+    return `tts.playTextI(${id}, "20" + float2gbk(${text}), ${bgm})` // 变量单个
+  }
+  else {
+    text = str2gbk(text, {onError: () => 32}) // 非法字符转空格 dec 32 hex 20
+    text = Array.prototype.map.call(text, v => v.toString(16)).slice(1,-1).join("") // 转hex字符串
+    if (id == 0) {
+      return `tts.playTextH("20" + "${text}", ${bgm})` // 文本全部 单个字符播放异常，开头补一个空格
+    }
+    return `tts.playTextI(${id}, "20" + "${text}", ${bgm})` // 文本单个
+  }
+}
+javascriptGenerator.forBlock['dsx_ttsPlayText'] = function (block) {
   const foreVol = block.getFieldValue('FOREVOL'), backVol = block.getFieldValue('BACKVOL'), speed = block.getFieldValue('SPEED')
   return `spWrite(255,85,141,1,0,${foreVol},${backVol},${speed})\n`
 }
